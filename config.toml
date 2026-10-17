@@ -1,0 +1,4 @@
+# The function validates user access tokens and a separate cron-only secret itself.
+# Do not flip this to true: new Supabase publishable keys are not JWTs.
+[functions.care-push]
+verify_jwt = false
