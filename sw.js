@@ -2,9 +2,9 @@
  * Push reminders, plus a cache of the app's own static files (artwork, guides, icons, code)
  * so it opens fast. It never caches account data, photos or anything from Supabase. */
 'use strict';
-const CACHE = 'scale-tell-static-v3.21';
-const SHELL = ['./', './index.html', './styles.css?v=3.21', './app.js?v=3.21', './manifest.webmanifest',
-  './icon-180.png', './icon-192.png', './assets/art/header.webp', './assets/art/dashboard.webp', './assets/art/auth-art.webp'];
+const CACHE = 'scale-tell-static-v3.21.1';
+const SHELL = ['./', './index.html', './styles.css?v=3.21.1', './app.js?v=3.21.1', './manifest.webmanifest',
+  './icon-180.png', './icon-192.png', './header.webp', './dashboard.webp', './auth-art.webp'];
 
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));
@@ -20,7 +20,7 @@ self.addEventListener('fetch', event => {
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
   if (url.origin !== self.location.origin || !url.pathname.startsWith(new URL(self.registration.scope).pathname)) return;
-  const isAsset = /\/(assets|guides)\/|\/icon-[^/]+\.png$/.test(url.pathname);
+  const isAsset = /\.webp$|\/icon-[^/]+\.png$/.test(url.pathname);
   if (isAsset) {
     // Artwork and guides rarely change: serve from cache, fetch once if missing.
     event.respondWith(caches.match(req).then(hit => hit || fetch(req).then(res => {
