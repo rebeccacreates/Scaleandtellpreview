@@ -1,0 +1,2847 @@
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  background: #f4e5f3;
+  color: #431955;
+  font-family: Arial, sans-serif;
+}
+.wrap {
+  max-width: 650px;
+  margin: auto;
+}
+.art {
+  position: relative;
+  width: 100%;
+  line-height: 0;
+}
+.art img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+.hot {
+  position: absolute;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  outline-offset: -3px;
+}
+.hot:focus-visible {
+  outline: 3px solid #794c91;
+}
+.sheet {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: #2c153b99;
+  z-index: 10;
+  padding: 18px;
+  align-items: center;
+  justify-content: center;
+}
+.sheet.on {
+  display: flex;
+}
+.modal {
+  background: #fff8f3;
+  border-radius: 22px;
+  padding: 22px;
+  width: min(100%, 430px);
+  max-height: 85vh;
+  overflow: auto;
+  box-shadow: 0 12px 50px #32183c66;
+}
+.modal h2 {
+  font:
+    italic 30px Georgia,
+    serif;
+  margin: 0 0 12px;
+}
+.panelBackButton {
+  border: 1px solid #d9c3df;
+  background: #fffaf7;
+  border-radius: 20px;
+  padding: 7px 12px;
+  font:
+    700 14px Arial,
+    sans-serif;
+  color: #45205b;
+  margin: 0 0 12px;
+  min-height: 35px;
+  cursor: pointer;
+}
+.panelBackButton[hidden] {
+  display: none;
+}
+.modal p {
+  line-height: 1.5;
+}
+.close {
+  float: right;
+  border: 0;
+  background: #e9d8ed;
+  border-radius: 50%;
+  font-size: 24px;
+  width: 35px;
+  height: 35px;
+}
+.action {
+  background: #79538e;
+  border: 0;
+  color: white;
+  border-radius: 13px;
+  padding: 11px 15px;
+  margin-top: 12px;
+}
+.modal select,
+.modal input {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  margin: 9px 0;
+  border: 1px solid #d9c3df;
+  border-radius: 9px;
+}
+.entry {
+  border-top: 1px solid #ead9e8;
+  padding: 9px 0;
+  font-size: 13px;
+}
+.muted {
+  font-size: 12px;
+  color: #5c6b46;
+}
+.notice {
+  background: #f1e5f2;
+  padding: 10px;
+  border-radius: 9px;
+  font-size: 12px;
+}
+.counter {
+  position: absolute;
+  top: 14.7%;
+  width: 8%;
+  height: 5.1%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: clamp(16px, 4.4vw, 34px);
+  font-weight: 800;
+  color: #401651;
+  pointer-events: none;
+}
+.counter.due,
+.counter.logs {
+  color: #273c25;
+}
+.counter.reptiles {
+  left: 8.5%;
+}
+.counter.due {
+  left: 32.5%;
+}
+.counter.upcoming {
+  left: 57%;
+}
+.counter.logs {
+  left: 81.5%;
+}
+.profileGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.profileGrid div {
+  background: #f4e8f2;
+  border-radius: 12px;
+  padding: 12px;
+}
+.profileGrid small {
+  display: block;
+  color: #607046;
+  margin-bottom: 5px;
+}
+.profileGrid b {
+  font-size: 17px;
+}
+.modal textarea {
+  width: 100%;
+  min-height: 65px;
+  border: 1px solid #d9c3df;
+  border-radius: 9px;
+  padding: 10px;
+  font: inherit;
+}
+.subtle {
+  border: 1px solid #d9c3df;
+  background: #fffaf5;
+  border-radius: 10px;
+  padding: 10px;
+  margin: 10px 0;
+}
+.modal .secondary {
+  background: #e8d7ec;
+  color: #431955;
+}
+.counter {
+  line-height: 1;
+}
+.profileHero {
+  background: linear-gradient(125deg, #eee0f2, #fff8f0);
+  border-radius: 16px;
+  padding: 15px;
+  margin-bottom: 12px;
+}
+.profileHero h3 {
+  font:
+    italic 27px Georgia,
+    serif;
+  margin: 0;
+}
+.tabs {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  margin: 14px 0;
+}
+.tabs button {
+  white-space: nowrap;
+  border: 1px solid #d8bfdf;
+  border-radius: 20px;
+  background: #fff8fb;
+  color: #45205b;
+  padding: 9px;
+}
+.tabs button.selected {
+  background: #79538e;
+  color: white;
+}
+.timeline {
+  background: #fff;
+  border: 1px solid #e7d9e9;
+  border-radius: 12px;
+  padding: 10px;
+  margin: 8px 0;
+}
+.modal input[type="number"] {
+  width: 100%;
+}
+.modal .smallbutton {
+  border: 0;
+  background: #e8d7ec;
+  color: #45205b;
+  border-radius: 9px;
+  padding: 7px 10px;
+}
+.sectionTitle {
+  font:
+    italic 22px Georgia,
+    serif;
+  margin: 15px 0 8px;
+}
+.hot.counterTap {
+  z-index: 2;
+}
+.task {
+  background: #fffaf6;
+  border: 1px solid #ead9e8;
+  border-radius: 12px;
+  padding: 11px;
+  margin: 8px 0;
+}
+.task b {
+  color: #45205b;
+}
+.task small {
+  display: block;
+  color: #607046;
+  margin-top: 4px;
+}
+.filters {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.filters select {
+  min-width: 0;
+}
+.task button {
+  border: 0;
+  background: #e8d7ec;
+  color: #45205b;
+  border-radius: 9px;
+  padding: 8px;
+  margin: 7px 6px 0 0;
+}
+.task .action {
+  background: #79538e;
+  color: white;
+}
+.modal .sectionTitle {
+  margin-top: 20px;
+}
+.completedLabel {
+  display: inline-block !important;
+  background: #e6eedf;
+  color: #476034 !important;
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-weight: 700;
+}
+.task:has(.completedLabel) {
+  background: #f4f6ef;
+}
+#reminderForm[hidden] {
+  display: none !important;
+}
+.growth {
+  border: 1px solid #ead9e8;
+  border-radius: 12px;
+  padding: 12px;
+  margin: 10px 0;
+  background: #fffaf6;
+}
+.growth svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.growth small {
+  display: block;
+  color: #586c38;
+}
+.filters input[type="date"] {
+  width: 100%;
+  box-sizing: border-box;
+}
+.task button {
+  cursor: pointer;
+}
+.recordActions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+.recordActions button {
+  background: #eadbef;
+  color: #45205b;
+  border: 0;
+  border-radius: 9px;
+  padding: 7px 12px;
+  cursor: pointer;
+}
+.entry {
+  padding: 10px 0;
+}
+.growth small + small {
+  margin-top: 5px;
+}
+.photoCard {
+  border: 1px solid #ead9e8;
+  border-radius: 12px;
+  padding: 12px;
+  margin: 12px 0;
+}
+.photoCard img {
+  max-width: 100%;
+  max-height: 320px;
+  object-fit: contain;
+  border-radius: 9px;
+}
+.photoCard button {
+  padding: 8px;
+  border-radius: 8px;
+  border: 0;
+  background: #ead9ef;
+  color: #45205b;
+}
+.task button {
+  margin: 5px;
+}
+.countLine {
+  font-weight: 700;
+  color: #586c38;
+  margin: 10px 0;
+}
+.helperLine {
+  font-size: 12px;
+  color: #586c38;
+  line-height: 1.45;
+}
+.inlineActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 8px 0 12px;
+}
+.inlineActions .action {
+  margin: 0;
+}
+.photoGalleryTitle {
+  margin: 15px 0 8px;
+  font:
+    italic 22px Georgia,
+    serif;
+}
+.filters label {
+  font-size: 12px;
+}
+.filters .wide {
+  grid-column: 1/-1;
+}
+.filters input[type="search"] {
+  width: 100%;
+}
+.recordActions button,
+.photoCard button {
+  min-height: 36px;
+}
+.repeatHint {
+  font-size: 12px;
+  color: #586c38;
+  margin: 6px 0;
+}
+.modal button:focus-visible {
+  outline: 3px solid #586c38;
+  outline-offset: 2px;
+}
+.modal .task {
+  overflow-wrap: anywhere;
+}
+.compassLead {
+  border-radius: 15px;
+  background: linear-gradient(115deg, #e9d9f0, #fff8f0);
+  padding: 12px;
+  margin: 5px 0 12px;
+}
+.compassLead h3 {
+  margin: 0;
+  color: #45205b;
+  font:
+    italic 25px Georgia,
+    serif;
+}
+.compassLead p {
+  margin: 5px 0 0;
+  font-size: 13px;
+  color: #586c38;
+}
+.compassInsight {
+  background: #fffdfa;
+  border: 1px solid #e7d7ea;
+  border-radius: 12px;
+  padding: 12px;
+  margin: 10px 0;
+}
+.compassInsight small {
+  color: #596b3c;
+  font-weight: bold;
+  letter-spacing: 0.05em;
+}
+.compassInsight p {
+  font-size: 14px;
+  margin: 6px 0 0;
+  line-height: 1.5;
+}
+.handoffText {
+  min-height: 300px !important;
+  font-size: 13px !important;
+  line-height: 1.6;
+}
+.inlineActions {
+  flex-wrap: wrap;
+}
+.habitatSummary {
+  background: #f7f0f7;
+  border: 1px solid #e6d6ea;
+  border-radius: 12px;
+  padding: 12px;
+  margin: 12px 0;
+}
+.habitatSummary p {
+  margin: 7px 0;
+  line-height: 1.45;
+}
+.habitatSummary small,
+.deviceCard small {
+  display: block;
+  color: #596b3c;
+  line-height: 1.45;
+}
+.deviceCard {
+  border: 1px solid #e7d7ea;
+  border-radius: 13px;
+  padding: 12px;
+  margin: 10px 0;
+  background: #fffdfa;
+  overflow-wrap: anywhere;
+}
+.deviceHeading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.deviceHeading b {
+  color: #45205b;
+}
+.deviceHeading span {
+  font-size: 11px;
+  background: #eadbef;
+  border-radius: 15px;
+  padding: 5px 9px;
+  color: #45205b;
+}
+.deviceCard p {
+  font-size: 13px;
+  margin: 7px 0;
+}
+.deviceOffline {
+  font-weight: 600;
+}
+.deviceLink {
+  display: inline-block;
+  background: #79538e;
+  color: #fff !important;
+  border-radius: 10px;
+  padding: 10px 12px;
+  text-decoration: none;
+  margin-top: 10px;
+  font-size: 14px;
+  font-weight: 600;
+}
+.deviceForm {
+  padding: 12px;
+  margin: 16px 0;
+  border: 1px solid #d8c1dc;
+  border-radius: 13px;
+  background: #fffaf8;
+}
+.deviceDirectory {
+  border-bottom: 1px solid #ebdbea;
+  padding: 12px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.deviceDirectory button {
+  border: 0;
+  border-radius: 8px;
+  padding: 8px;
+  background: #eadbef;
+  color: #45205b;
+}
+.deviceForm label {
+  display: block;
+  margin-top: 10px;
+}
+.deviceForm input,
+.deviceForm select {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+.tabs {
+  flex-wrap: wrap;
+}
+.resourceIntro {
+  font-size: 14px;
+  line-height: 1.55;
+  color: #586c38;
+}
+.resourceTile {
+  width: 100%;
+  text-align: left;
+  display: block;
+  padding: 16px;
+  margin: 11px 0;
+  background: #fffaf6;
+  border: 1px solid #e5d5e6;
+  border-radius: 16px;
+  color: #45205b;
+  cursor: pointer;
+}
+.resourceTile strong {
+  font-size: 18px;
+  display: block;
+  margin-bottom: 5px;
+}
+.resourceTile small {
+  font-size: 13px;
+  line-height: 1.5;
+  display: block;
+  color: #5f674d;
+}
+.resourceNotice {
+  padding: 11px 13px;
+  border-radius: 12px;
+  background: #f0e7f1;
+  margin: 11px 0;
+  line-height: 1.5;
+  font-size: 13px;
+  color: #45205b;
+}
+.resourceAlert {
+  padding: 13px;
+  border: 2px solid #ab5b59;
+  background: #fff6f3;
+  border-radius: 12px;
+  margin: 12px 0;
+  line-height: 1.5;
+}
+.resourceAlert strong {
+  display: block;
+  color: #8c3434;
+}
+.guideGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px;
+  margin: 12px 0;
+}
+.guideGrid button {
+  text-align: left;
+  background: #fffaf6;
+  border: 1px solid #dfcce3;
+  border-radius: 12px;
+  color: #45205b;
+  padding: 12px;
+  font: inherit;
+  min-width: 0;
+}
+.guideGrid button strong {
+  display: block;
+  font-size: 14px;
+}
+.guideGrid button small {
+  display: block;
+  color: #62704f;
+  font-size: 11px;
+  margin-top: 5px;
+}
+.guidePage {
+  margin: 13px 0 19px;
+}
+.guidePage img {
+  display: block;
+  max-width: 100%;
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+  border: 1px solid #eadce8;
+  background: #fff;
+}
+.guidePage figcaption {
+  text-align: center;
+  color: #586c38;
+  font-size: 12px;
+  margin: 5px 0;
+}
+.guideText {
+  white-space: pre-wrap;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+  font-size: 13px;
+  max-height: 360px;
+  overflow: auto;
+  padding: 10px;
+  background: #faf7f5;
+  border-radius: 8px;
+}
+.socialLink {
+  display: block;
+  border-radius: 12px;
+  background: #eaddf0;
+  padding: 12px;
+  margin: 9px 0;
+  color: #45205b;
+  text-decoration: none;
+  font-weight: 600;
+}
+.communityChoice {
+  background: #fffaf6;
+  border: 1px solid #e5d5e6;
+  border-radius: 15px;
+  padding: 14px;
+  margin: 12px 0;
+}
+.communityChoice strong {
+  color: #45205b;
+  display: block;
+  font-size: 16px;
+}
+.communityChoice p {
+  font-size: 13px;
+  line-height: 1.48;
+  color: #586c38;
+  margin: 7px 0;
+}
+.communityMessenger {
+  background: #e8eddf;
+  color: #405630;
+}
+.communityChoice .socialLink {
+  min-height: 44px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+.resourceField {
+  margin: 10px 0;
+}
+.resourceField input,
+.resourceField select {
+  box-sizing: border-box;
+  width: 100%;
+}
+.resourceActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 14px 0;
+}
+.resourceActions button {
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+.resourceMuted {
+  font-size: 12px;
+  color: #626b54;
+  line-height: 1.5;
+}
+
+/* V1.5 UI overlays only; embedded approved artwork remains unchanged */
+.headerArt .headerHot {
+  z-index: 3;
+  top: 3%;
+  height: 17%;
+  width: 15%;
+  border-radius: 45%;
+}
+.headerArt .menuHot {
+  left: 0;
+}
+.headerArt .bellHot {
+  right: 0;
+}
+.menuTile,
+.noticeTile {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 14px 15px;
+  margin: 9px 0;
+  background: #fffaf6;
+  border: 1px solid #e3cde7;
+  border-radius: 13px;
+  color: #45205b;
+  font: inherit;
+  cursor: pointer;
+}
+.menuTile small {
+  display: block;
+  color: #586c38;
+  margin-top: 5px;
+  line-height: 1.35;
+}
+.noticeTile strong {
+  display: block;
+}
+.noticeTile small {
+  display: block;
+  margin-top: 5px;
+  color: #607046;
+}
+.notifyCount {
+  font-size: 12px;
+  color: #586c38;
+  margin: 8px 0;
+}
+.prefBox {
+  border: 1px solid #dec7e3;
+  border-radius: 12px;
+  padding: 12px;
+  margin: 12px 0;
+}
+.prefBox label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 5px 0;
+}
+.prefBox input[type="checkbox"] {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  margin: 0;
+}
+.profilePic {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  float: right;
+  border-radius: 17px;
+  border: 3px solid white;
+  box-shadow: 0 2px 8px #45205b20;
+  margin: 0 0 10px 12px;
+}
+.reptileListPic {
+  width: 62px;
+  height: 62px;
+  object-fit: cover;
+  border-radius: 12px;
+  float: left;
+  margin-right: 12px;
+}
+.photoCard .profileSelected {
+  font-weight: bold;
+  color: #466b3c;
+  background: #e6eedf;
+  padding: 7px 10px;
+  display: inline-block;
+  border-radius: 9px;
+}
+.photoCard .recordActions {
+  flex-wrap: wrap;
+}
+.habitatHistoryIntro {
+  font-size: 13px;
+  color: #586c38;
+  line-height: 1.5;
+}
+.guideReader {
+  margin: 12px 0;
+  padding: 12px;
+  background: #fffaf6;
+  border: 1px solid #e6d3e8;
+  border-radius: 15px;
+}
+.guideMainImage {
+  display: block;
+  width: 100%;
+  height: auto;
+  cursor: zoom-in;
+  border-radius: 10px;
+  touch-action: pan-y;
+}
+.guideControls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 12px;
+}
+.guideControls button,
+.guideZoom button {
+  background: #e7d6ed;
+  border: 0;
+  border-radius: 11px;
+  padding: 11px 12px;
+  color: #45205b;
+  font: inherit;
+}
+.guideControls button:disabled,
+.guideZoom button:disabled {
+  opacity: 0.35;
+}
+.guideCount {
+  font-size: 13px;
+  color: #586c38;
+  text-align: center;
+}
+.guideHint {
+  font-size: 12px;
+  color: #586c38;
+  text-align: center;
+  line-height: 1.4;
+}
+.guideZoom[hidden] {
+  display: none !important;
+}
+.guideZoom {
+  position: fixed;
+  z-index: 70;
+  inset: 0;
+  background: #1f1228f5;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  padding: env(safe-area-inset-top) 7px env(safe-area-inset-bottom);
+}
+.guideZoomBar,
+.guideZoomNav {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 7px;
+  padding: 12px 3px;
+}
+.guideZoomBar span {
+  font-size: 13px;
+  text-align: center;
+}
+.guideZoomNav span {
+  font-size: 11px;
+  text-align: center;
+  color: #f4e5f3;
+}
+.guideZoomStage {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  touch-action: none;
+  user-select: none;
+}
+.guideZoomStage img {
+  max-width: 100%;
+  max-height: 100%;
+  height: auto;
+  width: auto;
+  object-fit: contain;
+  transform-origin: center center;
+  will-change: transform;
+  pointer-events: none;
+  user-select: none;
+}
+.guideZoom button {
+  cursor: pointer;
+}
+.guideZoomNav button {
+  white-space: nowrap;
+}
+
+/* V3.8: one clean, opaque card row. The branded dashboard image stays untouched. */
+#homeCardOverlays {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+/* V3.9: visual-only sample animals and complete card coverage. */
+.homeExample {
+  isolation: isolate;
+}
+.homeExampleLabel {
+  position: absolute;
+  top: 13%;
+  left: -10%;
+  width: 120%;
+  transform: rotate(-9deg);
+  pointer-events: none;
+  background: #fffaf0d9;
+  border-top: 1px solid #79538e44;
+  border-bottom: 1px solid #79538e44;
+  color: #45205b;
+  font:
+    bold clamp(8px, 2vw, 15px)/1.6 Arial,
+    sans-serif;
+  letter-spacing: 0.17em;
+  text-align: center;
+  z-index: 2;
+  text-shadow: 0 1px white;
+}
+.homeAddCard {
+  background: #f5eaf2;
+}
+.homeEmptyArt {
+  height: 64%;
+  flex: 0 0 64%;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(140deg, #f6e9f4, #e9ebdc);
+  color: #79538e;
+  font:
+    normal clamp(30px, 9vw, 64px)/1 Georgia,
+    serif;
+}
+.deviceFormCard,
+.vetResourceCard {
+  border: 1px solid #decce2;
+  background: #fffaf7;
+  border-radius: 14px;
+  padding: 13px;
+  margin: 12px 0;
+}
+.deviceFormCard label,
+.vetResourceCard label {
+  display: block;
+  margin: 9px 0;
+}
+.deviceFormCard select,
+.deviceFormCard input,
+.vetResourceCard input,
+.vetResourceCard textarea {
+  width: 100%;
+  box-sizing: border-box;
+}
+.deviceFormCard .action {
+  margin-top: 8px;
+}
+.deviceCard small {
+  display: block;
+  margin: 5px 0;
+}
+#homeCardOverlays .homeCardCleanSlate {
+  position: absolute;
+  left: 0;
+  top: 33.87372%;
+  width: 100%;
+  height: 32.33788%;
+  max-width: none;
+  display: block;
+  pointer-events: none;
+}
+.homeCardReplace,
+.homeCardOriginal {
+  position: absolute;
+  top: 34.47099%;
+  height: 31.74061%;
+  overflow: hidden;
+  border-radius: clamp(8px, 2.4vw, 18px);
+  pointer-events: none;
+}
+.homeCardReplace {
+  background: #fff8f0;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  isolation: isolate;
+  box-shadow: 0 2px 7px #45205b25;
+}
+.homeCardReplace img {
+  display: block;
+  flex: 0 0 64%;
+  height: 64%;
+  min-height: 0;
+  width: 100%;
+  object-fit: cover;
+  object-position: center center;
+  border: 0;
+  border-radius: 0;
+}
+.homeCardReplace .homeCardName {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 3%;
+  font:
+    italic clamp(14px, 4.1vw, 30px)/1.04 Georgia,
+    serif;
+  color: #45205b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.homeCardReplace .homeCardSpecies {
+  flex: 0 0 13%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 2%;
+  font:
+    600 clamp(7px, 1.7vw, 13px)/1.1 Arial,
+    sans-serif;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #586c38;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.homeCardOriginal img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+}
+.homeHeart {
+  position: absolute;
+  right: 3%;
+  top: 3%;
+  z-index: 2;
+  background: #fffdfb;
+  color: #a87cb7;
+  border-radius: 50%;
+  width: 15%;
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  font:
+    bold clamp(11px, 3vw, 23px) Arial,
+    sans-serif;
+  box-shadow: 0 2px 6px #45205b25;
+}
+.cloudMergeSummary {
+  border: 1px solid #d9c3df;
+  background: #fffaf7;
+  border-radius: 14px;
+  padding: 14px;
+  margin: 12px 0;
+  line-height: 1.5;
+}
+.cloudMergeSummary label {
+  display: block;
+  margin: 12px 0;
+  color: #45205b;
+  font-weight: 600;
+}
+.cloudMergeSummary select {
+  max-width: 100%;
+  margin: 6px 0 0;
+  background: white;
+}
+.cloudMergeSummary input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  display: inline-block;
+  margin: 0 7px 0 0;
+  vertical-align: middle;
+  accent-color: #79538e;
+}
+.cloudMergeSummary .muted {
+  line-height: 1.5;
+}
+
+.emptyHomeCard {
+  display: grid;
+  place-items: center;
+  height: 100%;
+  font:
+    italic clamp(13px, 3vw, 25px) Georgia,
+    serif;
+  color: #79538e;
+  background: #f4e8f2;
+}
+.profileHero::after {
+  content: "";
+  display: block;
+  clear: both;
+}
+.reptileListItem::after {
+  content: "";
+  display: block;
+  clear: both;
+}
+
+/* V1.7 animal setup, roster and keeper-entered habitat trends. */
+.animalFormGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 11px;
+}
+.animalFormGrid label {
+  min-width: 0;
+  display: block;
+}
+.animalFormGrid input,
+.animalFormGrid select {
+  width: 100%;
+  box-sizing: border-box;
+}
+.animalPortraitPreview {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  border: 1px solid #e6d2e7;
+  border-radius: 16px;
+  background: #fffaf7;
+  padding: 10px;
+  margin: 13px 0;
+}
+.animalPortraitPreview img {
+  height: 92px;
+  width: 108px;
+  object-fit: cover;
+  border-radius: 11px;
+}
+.animalPortraitPreview strong {
+  display: block;
+  color: #45205b;
+}
+.animalPortraitPreview small {
+  display: block;
+  margin-top: 4px;
+  color: #586c38;
+}
+.rosterSearch {
+  margin: 12px 0 6px;
+  width: 100%;
+  box-sizing: border-box;
+}
+.rosterControl {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+.rosterControl button {
+  font-size: 13px;
+}
+.rosterTag {
+  font-size: 12px;
+  color: #586c38;
+  display: inline-block;
+  padding: 2px 6px;
+  border: 1px solid #e3d2e6;
+  border-radius: 7px;
+  margin-top: 4px;
+}
+.quickCare {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 9px;
+}
+.quickCare button {
+  font-size: 13px;
+  padding: 10px 12px;
+  border: 1px solid #d9c7dc;
+  background: #f4e7f5;
+  color: #45205b;
+  border-radius: 11px;
+}
+.habitatChartWrap {
+  border: 1px solid #e6d2e7;
+  padding: 12px;
+  border-radius: 12px;
+  background: #fffaf6;
+  margin: 12px 0;
+}
+.habitatChartWrap svg {
+  width: 100%;
+  display: block;
+  height: auto;
+}
+.habitatChartLegend {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  font-size: 12px;
+  color: #586c38;
+}
+.habitatChartLegend span:before {
+  content: "";
+  display: inline-block;
+  width: 10px;
+  height: 3px;
+  margin: 0 5px 2px 0;
+  background: var(--line);
+}
+.habitatChartWrap small {
+  color: #586c38;
+  display: block;
+  margin-top: 5px;
+}
+@media (max-width: 360px) {
+  .animalFormGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.onboard {
+  padding: 8px 0;
+}
+.onboard h3 {
+  font-size: 1.35rem;
+  color: #45205b;
+}
+.onboard p {
+  line-height: 1.6;
+}
+.formSummary {
+  cursor: pointer;
+  background: #f1e5f4;
+  border: 1px solid #e1c8e7;
+  padding: 13px 16px;
+  border-radius: 13px;
+  color: #45205b;
+  font-weight: 700;
+  margin: 10px 0;
+}
+.healthForm {
+  display: grid;
+  gap: 10px;
+  padding: 4px;
+}
+.healthForm input,
+.healthForm select,
+.healthForm textarea {
+  box-sizing: border-box;
+  width: 100%;
+}
+.healthAttachment img {
+  display: block;
+  width: 100%;
+  max-width: 180px;
+  max-height: 180px;
+  object-fit: cover;
+  border-radius: 12px;
+  margin: 10px 0;
+}
+.savedFeedback {
+  color: #486538;
+  font-weight: 700;
+}
+.sitterCheck {
+  display: flex !important;
+  align-items: center;
+  gap: 10px;
+  margin: 8px 0 !important;
+  padding: 11px;
+  border: 1px solid #ead9e8;
+  border-radius: 10px;
+}
+.sitterCheck input {
+  width: auto !important;
+  flex: 0 0 auto;
+}
+.sitterForm {
+  display: grid;
+  gap: 10px;
+}
+.sitterForm textarea.handoffText {
+  min-height: 290px;
+  font-size: 14px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+.sitterForm label {
+  min-width: 0;
+}
+.sitterForm .inlineActions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.onboardIntro {
+  text-align: center;
+  font-size: 1.05rem;
+  color: #586c38;
+  margin: 10px 0 22px;
+}
+.onboard h3 {
+  text-align: center;
+  font:
+    italic 1.65rem Georgia,
+    serif;
+}
+.onboard .action {
+  display: block;
+  width: 100%;
+  text-align: center;
+  box-sizing: border-box;
+  text-decoration: none;
+  margin: 11px 0;
+  cursor: pointer;
+}
+.onboard .onboardSocial {
+  background: #f1e5f4;
+  color: #45205b;
+  border: 1px solid #e2cfe6;
+}
+.onboard .muted {
+  text-align: center;
+  margin: 20px 0 0;
+  line-height: 1.5;
+}
+/* V1.9 compact animal profile */
+.profilePrimaryAction {
+  display: block;
+  width: 100%;
+  margin: 15px 0 12px;
+  font-size: 17px;
+  font-weight: 700;
+  min-height: 48px;
+}
+.profileNav {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 5px;
+  overflow: visible;
+  margin: 10px 0 15px;
+}
+.profileNav button {
+  white-space: normal;
+  font-size: 13px;
+  min-height: 44px;
+  padding: 9px 4px;
+}
+.profileMore,
+.profileFold,
+.compactDisclosure {
+  border: 1px solid #e4d4e8;
+  border-radius: 13px;
+  background: #fffaf7;
+  margin: 13px 0;
+  padding: 12px;
+}
+.profileMore summary,
+.profileFold summary,
+.compactDisclosure summary {
+  cursor: pointer;
+  color: #45205b;
+  font-weight: 700;
+  min-height: 24px;
+}
+.compactActions,
+.logCareChoices {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 12px;
+}
+.compactActions button,
+.logCareChoices button {
+  background: #f1e5f3;
+  color: #45205b;
+  border: 1px solid #e0cce3;
+  border-radius: 12px;
+  padding: 12px 8px;
+  min-height: 44px;
+}
+.logCareChoices button {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  text-align: left;
+}
+.logCareChoices button span {
+  color: #79538e;
+}
+.profileHero .profilePic {
+  max-width: 110px;
+  max-height: 110px;
+  object-fit: cover;
+  border-radius: 16px;
+}
+/* V2.0 roster navigation */
+.rosterSummary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.rosterSummary > div {
+  flex: 1;
+  min-width: 0;
+}
+.rosterSummary small {
+  display: block;
+  color: #586c38;
+  margin: 3px 0;
+}
+.rosterSummary .action {
+  flex: 0 0 auto;
+  margin: 0;
+  min-height: 44px;
+  padding: 10px;
+}
+.rosterManage {
+  margin-top: 8px;
+}
+.rosterManage summary {
+  color: #79538e;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 6px 0;
+}
+.rosterControl button {
+  min-height: 42px;
+}
+/* V2.1 consistent disclosures */
+.compactDisclosure > summary {
+  list-style-position: outside;
+  padding: 4px 0;
+}
+.compactDisclosure[open] > summary {
+  margin-bottom: 10px;
+}
+.compactDisclosure .deviceCard,
+.compactDisclosure .entry {
+  overflow-wrap: anywhere;
+}
+.modal :is(input, select, textarea, button) {
+  font: inherit;
+}
+.modal button {
+  cursor: pointer;
+}
+.modal button:focus-visible,
+.modal summary:focus-visible {
+  outline: 3px solid #79538e;
+  outline-offset: 3px;
+}
+.modal :is(input, select, textarea) {
+  box-sizing: border-box;
+  max-width: 100%;
+}
+/* V2.2 touch-friendly profile details */
+@media (max-width: 390px) {
+  .profileNav button {
+    font-size: 12px;
+    padding: 9px 3px;
+  }
+  .profileGrid {
+    gap: 7px;
+  }
+  .compactActions {
+    grid-template-columns: 1fr;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .modal * {
+    scroll-behavior: auto !important;
+    transition: none !important;
+  }
+}
+.compactRecent {
+  border-bottom: 1px solid #e6d9e7;
+  padding: 9px 0;
+}
+.compactRecent strong,
+.compactRecent small,
+.timeline small {
+  display: block;
+}
+.compactRecent small,
+.timeline small {
+  color: #586c38;
+  margin-top: 4px;
+}
+.timeline .smallbutton {
+  margin-top: 7px;
+}
+.backupOverview {
+  border: 1px solid #e3d3e5;
+  background: #f6edf8;
+  border-radius: 14px;
+  padding: 14px;
+  margin: 10px 0;
+  color: #45205b;
+}
+.backupOverview p {
+  margin: 8px 0;
+  color: #586c38;
+}
+.backupOverview small {
+  display: block;
+  line-height: 1.5;
+}
+.task small {
+  display: block;
+  margin-top: 5px;
+}
+/* Cloud account remains a tucked-away tool; no changes to approved dashboard art. */
+.cloudPane {
+  border: 1px solid #e3d1e7;
+  background: #fffdfa;
+  border-radius: 14px;
+  padding: 14px;
+  margin: 12px 0;
+  overflow-wrap: anywhere;
+}
+.cloudPane h3 {
+  margin: 0 0 7px;
+  color: #45205b;
+}
+.cloudPane small {
+  display: block;
+  color: #586c38;
+  line-height: 1.5;
+}
+.cloudPane label {
+  display: block;
+  margin: 12px 0;
+}
+.cloudPane button {
+  min-height: 44px;
+  margin: 7px 6px 0 0;
+}
+.cloudPane input[type="checkbox"] {
+  display: inline;
+  width: auto;
+  vertical-align: middle;
+  margin: 0 7px 0 0;
+}
+.cloudPane .cloudSafe {
+  background: #eef3e9;
+  border: 1px solid #d4e1c8;
+  padding: 10px;
+  border-radius: 10px;
+}
+.cloudPane .cloudWarn {
+  background: #f7ebee;
+  border: 1px solid #eccbd4;
+  padding: 10px;
+  border-radius: 10px;
+}
+.cloudPane #cloudStatus {
+  min-height: 22px;
+  white-space: pre-wrap;
+  line-height: 1.5;
+}
+.cloudPane button:disabled {
+  opacity: 0.55;
+}
+
+/* V3.4 | dedicated welcome/authentication entrance. */
+[hidden] {
+  display: none !important;
+}
+body.authLocked {
+  background: #f8f0e7;
+  overflow: hidden;
+}
+body.authLocked #appShell {
+  display: none !important;
+}
+#authGate {
+  position: fixed;
+  inset: 0;
+  z-index: 9;
+  background:
+    radial-gradient(circle at 15% 8%, #ead8ee 0, transparent 39%),
+    linear-gradient(160deg, #fff9f1, #f3e6f4 85%);
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding: 24px 14px max(30px, env(safe-area-inset-bottom));
+  font-family: Arial, sans-serif;
+  color: #45205b;
+}
+.authCard {
+  max-width: 470px;
+  margin: 0 auto;
+  background: #fffaf5;
+  border: 1px solid #e4d1e4;
+  border-radius: 22px;
+  box-shadow: 0 15px 45px #45205b25;
+  overflow: hidden;
+}
+.authArt {
+  width: 100%;
+  height: auto;
+  display: block;
+  aspect-ratio: 3/1;
+  object-fit: cover;
+  background: #f7f0e7;
+}
+.authContent {
+  padding: 22px 23px 24px;
+}
+.authContent h1 {
+  font:
+    italic 31px Georgia,
+    serif;
+  margin: 0 0 4px;
+  color: #45205b;
+}
+.authContent .authTagline {
+  font-size: 12px;
+  color: #596b3c;
+  line-height: 1.4;
+  letter-spacing: 0.09em;
+  font-weight: 700;
+  margin: 0 0 15px;
+}
+.authIntro {
+  font-size: 14px;
+  line-height: 1.55;
+  margin: 8px 0 16px;
+  color: #586345;
+}
+.authContent label.authField {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  margin: 13px 0 5px;
+}
+.authContent input[type="email"],
+.authContent input[type="password"] {
+  width: 100%;
+  height: 45px;
+  box-sizing: border-box;
+  border: 1px solid #d8c1dc;
+  border-radius: 11px;
+  padding: 11px 12px;
+  font:
+    16px Arial,
+    sans-serif;
+  background: white;
+  color: #45205b;
+}
+.authStay {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #45205b;
+  margin: 14px 0 4px;
+  line-height: 1.4;
+  cursor: pointer;
+}
+.authStay input {
+  accent-color: #79538e;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+.authButton {
+  border: 0;
+  background: #79538e;
+  color: white;
+  border-radius: 12px;
+  padding: 13px 14px;
+  font:
+    700 15px Arial,
+    sans-serif;
+  min-height: 44px;
+  cursor: pointer;
+  width: 100%;
+  margin-top: 13px;
+}
+.authButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.authButton.light {
+  background: #ebdcef;
+  color: #45205b;
+}
+.authButton.outline {
+  background: #fffaf5;
+  border: 1px solid #d4bcda;
+  color: #45205b;
+}
+.authMeta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+.authLink {
+  background: none;
+  border: 0;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  color: #643a7a;
+  padding: 8px 0;
+  font:
+    700 13px Arial,
+    sans-serif;
+  cursor: pointer;
+}
+.authDivider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 19px 0 4px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: #766680;
+}
+.authDivider:before,
+.authDivider:after {
+  content: "";
+  height: 1px;
+  background: #ddcade;
+  flex: 1;
+}
+.authFacebook {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  text-decoration: none;
+  background: #eef1fb;
+  border: 1px solid #bdcdec;
+  color: #224b9a;
+  border-radius: 12px;
+  padding: 10px 12px;
+  min-height: 44px;
+  font-weight: bold;
+  font-size: 14px;
+  margin-top: 9px;
+}
+.fbGlyph {
+  width: 25px;
+  height: 25px;
+  border-radius: 6px;
+  background: #1877f2;
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font:
+    bold 25px Arial,
+    sans-serif;
+  line-height: 1;
+  padding-top: 3px;
+}
+.authSupport {
+  margin: 12px 0 0;
+  color: #586345;
+  font-size: 12px;
+  line-height: 1.55;
+}
+.authMessage {
+  margin-top: 11px;
+  white-space: pre-wrap;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #5b3c68;
+  min-height: 0;
+}
+.authMessage:not(:empty) {
+  background: #f0e5f1;
+  border-radius: 10px;
+  padding: 10px;
+}
+.authContent button:focus-visible,
+.authContent a:focus-visible,
+.authContent input:focus-visible {
+  outline: 3px solid #596b3c;
+  outline-offset: 3px;
+}
+body.authLocked #sheet {
+  z-index: 12;
+}
+@media (max-width: 390px) {
+  .authContent {
+    padding: 16px 18px 22px;
+  }
+  .authContent h1 {
+    font-size: 27px;
+  }
+  .authMeta {
+    font-size: 12px;
+  }
+}
+@media (min-width: 800px) {
+  #authGate {
+    padding-top: 5vh;
+  }
+}
+
+/* Launch preview: honest, compact notice for planned gauge connections. */
+.gaugeComingSoon {
+  border: 1px solid #d9c7e1;
+  background: linear-gradient(120deg, #f6edf9, #fffaf5);
+  border-radius: 15px;
+  padding: 14px;
+  margin: 12px 0;
+  color: #45205b;
+  line-height: 1.45;
+}
+.gaugeComingSoon strong {
+  display: block;
+  font:
+    700 16px Arial,
+    sans-serif;
+  margin-bottom: 5px;
+}
+.gaugeComingSoon p {
+  font-size: 13px;
+  margin: 5px 0;
+  color: #586345;
+}
+.gaugeComingSoon small {
+  display: block;
+  font-size: 12px;
+  color: #6d6371;
+  margin-top: 7px;
+}
+
+/* Launch candidate: modest secondary tools, never cover the approved artwork. */
+.lcLead {
+  font-size: 14px;
+  line-height: 1.5;
+  color: #586345;
+  margin: 8px 0 15px;
+}
+.lcPanel {
+  padding: 14px;
+  background: #fffaf5;
+  border: 1px solid #e1d1e5;
+  border-radius: 14px;
+  margin: 12px 0;
+  line-height: 1.5;
+}
+.lcPanel h3 {
+  font:
+    italic 23px Georgia,
+    serif;
+  color: #45205b;
+  margin: 0 0 7px;
+}
+.lcPanel p {
+  margin: 6px 0;
+  font-size: 13px;
+}
+.lcPanel li {
+  font-size: 13px;
+  padding: 3px 0;
+}
+.lcPanel .action {
+  margin: 8px 6px 0 0;
+}
+.lcNotice {
+  border-left: 3px solid #79538e;
+  background: #f4eafa;
+  padding: 11px;
+  font-size: 13px;
+  line-height: 1.45;
+  border-radius: 9px;
+  margin: 12px 0;
+}
+.lcEntry {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  font:
+    14px Arial,
+    sans-serif;
+  padding: 11px;
+  border: 1px solid #d9c3df;
+  border-radius: 9px;
+  background: white;
+  margin: 8px 0;
+  color: #45205b;
+}
+.lcEntryArea {
+  min-height: 125px;
+  resize: vertical;
+  line-height: 1.5;
+}
+.lcSmall {
+  font-size: 12px;
+  color: #60654d;
+  line-height: 1.5;
+}
+.lcIconPreview {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.lcIconPreview img {
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  box-shadow: 0 2px 8px #45205b25;
+}
+
+.importRow input[type="checkbox"] {
+  width: auto !important;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+.importRow label {
+  display: block;
+  margin: 10px 0;
+  font-size: 13px;
+}
+.importRow input:not([type="checkbox"]),
+.importRow select,
+.importRow textarea {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 38px;
+  padding: 8px;
+  border: 1px solid #d9c3df;
+  border-radius: 8px;
+  margin-top: 4px;
+}
+.importRow textarea {
+  min-height: 64px;
+}
+/* V3.11: two lightweight welcome pages; the original illustration is unmodified. */
+.welcomeSlides {
+  touch-action: pan-y;
+  position: relative;
+}
+.welcomeSlide[hidden] {
+  display: none !important;
+}
+.welcomeInstallSlide {
+  box-sizing: border-box;
+  min-height: 156px;
+  padding: 16px 21px 12px;
+  background: linear-gradient(125deg, #f0e4f5, #fffaf5 60%, #edf0e4);
+  color: #45205b;
+}
+.welcomeInstallTitle {
+  font:
+    italic 24px Georgia,
+    serif;
+  margin-bottom: 5px;
+}
+.welcomeInstallSlide p {
+  font-size: 12px;
+  color: #586345;
+  margin: 3px 0 9px;
+}
+.welcomeInstallPlatforms {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 9px 0;
+}
+.welcomeInstallPlatforms div {
+  border: 1px solid #ddcde2;
+  background: #fffbf8;
+  border-radius: 10px;
+  padding: 9px;
+}
+.welcomeInstallPlatforms strong,
+.welcomeInstallPlatforms span {
+  display: block;
+}
+.welcomeInstallPlatforms strong {
+  font-size: 12px;
+  margin-bottom: 4px;
+}
+.welcomeInstallPlatforms span {
+  font-size: 11px;
+  line-height: 1.4;
+}
+.welcomeAndroidUrl {
+  display: block;
+  margin: 4px 0;
+  color: #5b3673;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  user-select: text;
+  -webkit-user-select: text;
+}
+.welcomeSupportLink {
+  display: block;
+  color: #5b3673;
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  overflow-wrap: anywhere;
+  padding: 4px 0;
+}
+.welcomeInstallSlide small {
+  display: block;
+  color: #69725e;
+  font-size: 10px;
+  margin-top: 4px;
+}
+.welcomeSlideNav {
+  display: flex;
+  gap: 7px;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 16px 5px;
+  background: #fffaf5;
+}
+.welcomeDot {
+  height: 9px;
+  width: 9px;
+  border-radius: 999px;
+  background: #d5c7d8;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+.welcomeDot.isActive {
+  background: #79538e;
+  width: 22px;
+}
+.welcomeNext {
+  font:
+    700 12px Arial,
+    sans-serif;
+  color: #634176;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  padding: 5px 8px;
+  margin-left: 10px;
+  min-height: 29px;
+}
+.welcomeNext:focus-visible,
+.welcomeDot:focus-visible,
+.welcomeSupportLink:focus-visible {
+  outline: 2px solid #586c38;
+  outline-offset: 3px;
+}
+@media (max-width: 370px) {
+  .welcomeInstallSlide {
+    padding: 12px;
+  }
+  .welcomeInstallPlatforms {
+    gap: 5px;
+  }
+  .welcomeInstallTitle {
+    font-size: 21px;
+  }
+  .welcomeInstallPlatforms div {
+    padding: 7px;
+  }
+}
+
+/* V3.12: third welcome page gives accurate notification onboarding without asking for permission prematurely. */
+.welcomeReminderSlide {
+  background: linear-gradient(125deg, #f3eafa, #fffaf5 65%, #e9f0e4);
+}
+.welcomeReminderEyebrow {
+  font:
+    bold 10px Arial,
+    sans-serif;
+  letter-spacing: 1.3px;
+  color: #586c38;
+  margin: 0 0 6px;
+}
+.welcomeReminderSlide .welcomeInstallPlatforms span {
+  font-size: 11px;
+}
+.welcomeReminderSlide .welcomeInstallPlatforms div {
+  min-height: 70px;
+}
+
+.pushPanel {
+  border: 1px solid #ddcee5;
+  border-radius: 14px;
+  background: #f8f1fa;
+  padding: 13px 14px;
+  margin: 10px 0 16px;
+  color: #45205b;
+}
+.pushPanel h3 {
+  margin: 0 0 7px;
+  font-size: 16px;
+}
+.pushPanel p {
+  font-size: 13px;
+  line-height: 1.5;
+  margin: 7px 0;
+}
+.pushPanel small {
+  display: block;
+  color: #586c38;
+  font-size: 11px;
+  line-height: 1.5;
+  margin-top: 9px;
+}
+.pushPanel .action {
+  margin-top: 8px;
+  width: 100%;
+}
+
+/* Founding Keeper Studio cosmetic themes. The approved raster artwork is intentionally unchanged. */
+.studioLead {
+  line-height: 1.5;
+  font-size: 14px;
+  color: #586c38;
+}
+.studioTile {
+  padding: 13px;
+  border: 1px solid #dfcce3;
+  border-radius: 15px;
+  margin: 11px 0;
+  background: #fffaf6;
+}
+.studioTile h3 {
+  font:
+    italic 22px Georgia,
+    serif;
+  margin: 0 0 5px;
+  color: #45205b;
+}
+.studioTile p {
+  font-size: 13px;
+  line-height: 1.45;
+  margin: 5px 0;
+}
+.studioThemes {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px;
+  margin: 10px 0;
+}
+.studioTheme {
+  min-width: 0;
+  padding: 8px;
+  border: 2px solid #d9c3df;
+  border-radius: 12px;
+  background: #fffaf5;
+  color: #45205b;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+}
+.studioTheme[aria-pressed="true"] {
+  border-color: #79538e;
+  outline: 2px solid #79538e;
+  outline-offset: 1px;
+}
+.studioSwatch {
+  height: 70px;
+  border-radius: 8px;
+  padding: 9px;
+  margin-bottom: 7px;
+  display: flex;
+  align-items: end;
+  gap: 5px;
+}
+.studioSwatch i {
+  display: inline-block;
+  width: 40%;
+  height: 31px;
+  border-radius: 7px;
+  border: 1px solid #ffffff40;
+}
+.studioTheme strong,
+.studioTheme small {
+  display: block;
+}
+.studioTheme small {
+  font-size: 11px;
+  line-height: 1.3;
+  margin-top: 3px;
+}
+.studioActions {
+  display: flex;
+  gap: 9px;
+  flex-wrap: wrap;
+}
+.studioActions button {
+  flex: 1;
+  margin-top: 8px;
+  min-width: 100px;
+}
+.studioStatus {
+  font-size: 12px;
+  min-height: 20px;
+  line-height: 1.4;
+}
+/* V3.19: visible pack catalogue; no selection or printable access without a verified entitlement. */
+.studioThemeLook {
+  cursor: default;
+  position: relative;
+}
+.studioThemeLook .studioSwatch {
+  pointer-events: none;
+}
+.studioThemeLook .themeLock {
+  display: block;
+  margin-top: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #634373;
+}
+.studioLockedAction {
+  display: block;
+  width: 100%;
+  border: 1px solid #d6c7db;
+  border-radius: 10px;
+  padding: 12px;
+  font:
+    700 13px Arial,
+    sans-serif;
+  background: #f0e9f1;
+  color: #51415a;
+  opacity: 1;
+  cursor: not-allowed;
+  text-align: center;
+}
+.studioPackNote {
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #f3edf4;
+  font-size: 12px;
+  line-height: 1.45;
+  color: #45205b;
+}
+.studioTile .studioPackNote {
+  margin-top: 10px;
+}
+
+body[data-st-theme="forest"] {
+  --t-page: #142b24;
+  --t-text: #f6f4e9;
+  --t-panel: #223d32;
+  --t-card: #294638;
+  --t-soft: #345543;
+  --t-accent: #bed29e;
+  --t-border: #688771;
+  --t-muted: #d2dec5;
+  --t-action: #bcd5a0;
+  --t-action-ink: #152a20;
+  --t-veil: #07170dd6;
+}
+body[data-st-theme="violet"] {
+  --t-page: #20142d;
+  --t-text: #faf4ff;
+  --t-panel: #302040;
+  --t-card: #3a284b;
+  --t-soft: #50365f;
+  --t-accent: #e1bff4;
+  --t-border: #88719a;
+  --t-muted: #e3d4ee;
+  --t-action: #d6afea;
+  --t-action-ink: #281532;
+  --t-veil: #15081fda;
+}
+body[data-st-theme="cream"] {
+  --t-page: #f5eedb;
+  --t-text: #453528;
+  --t-panel: #fffaf0;
+  --t-card: #fff5e4;
+  --t-soft: #f1e4c9;
+  --t-accent: #765b42;
+  --t-border: #d7c5a5;
+  --t-muted: #675d4b;
+  --t-action: #765b42;
+  --t-action-ink: #fffaf0;
+  --t-veil: #493c2d99;
+}
+body[data-st-theme="forest"],
+body[data-st-theme="violet"],
+body[data-st-theme="cream"] {
+  background: var(--t-page);
+  color: var(--t-text);
+}
+body[data-st-theme="forest"] .sheet,
+body[data-st-theme="violet"] .sheet,
+body[data-st-theme="cream"] .sheet {
+  background: var(--t-veil);
+}
+body[data-st-theme="forest"] .modal,
+body[data-st-theme="violet"] .modal,
+body[data-st-theme="cream"] .modal {
+  background: var(--t-panel);
+  color: var(--t-text);
+}
+body[data-st-theme="forest"]
+  :is(
+    .modal h2,
+    .modal h3,
+    .modal b,
+    .modal strong,
+    .modal label,
+    .modal .sectionTitle,
+    .modal .resourceTile strong,
+    .modal .lcPanel h3,
+    .modal .deviceHeading b,
+    .modal .task b,
+    .modal .studioTile h3,
+    .modal .studioTheme
+  ),
+body[data-st-theme="violet"]
+  :is(
+    .modal h2,
+    .modal h3,
+    .modal b,
+    .modal strong,
+    .modal label,
+    .modal .sectionTitle,
+    .modal .resourceTile strong,
+    .modal .lcPanel h3,
+    .modal .deviceHeading b,
+    .modal .task b,
+    .modal .studioTile h3,
+    .modal .studioTheme
+  ),
+body[data-st-theme="cream"]
+  :is(
+    .modal h2,
+    .modal h3,
+    .modal b,
+    .modal strong,
+    .modal label,
+    .modal .sectionTitle,
+    .modal .resourceTile strong,
+    .modal .lcPanel h3,
+    .modal .deviceHeading b,
+    .modal .task b,
+    .modal .studioTile h3,
+    .modal .studioTheme
+  ) {
+  color: var(--t-text);
+}
+body[data-st-theme="forest"]
+  .modal
+  :is(
+    .muted,
+    .helperLine,
+    .lcSmall,
+    .resourceIntro,
+    .resourceTile small,
+    .deviceCard small,
+    .notice small,
+    .studioLead,
+    .studioTile p,
+    .studioStatus,
+    .task small
+  ),
+body[data-st-theme="violet"]
+  .modal
+  :is(
+    .muted,
+    .helperLine,
+    .lcSmall,
+    .resourceIntro,
+    .resourceTile small,
+    .deviceCard small,
+    .notice small,
+    .studioLead,
+    .studioTile p,
+    .studioStatus,
+    .task small
+  ),
+body[data-st-theme="cream"]
+  .modal
+  :is(
+    .muted,
+    .helperLine,
+    .lcSmall,
+    .resourceIntro,
+    .resourceTile small,
+    .deviceCard small,
+    .notice small,
+    .studioLead,
+    .studioTile p,
+    .studioStatus,
+    .task small
+  ) {
+  color: var(--t-muted);
+}
+body[data-st-theme="forest"]
+  .modal
+  :is(
+    .lcPanel,
+    .task,
+    .growth,
+    .timeline,
+    .resourceTile,
+    .resourceNotice,
+    .deviceCard,
+    .deviceForm,
+    .studioTile,
+    .studioTheme,
+    .subtle,
+    .habitatSummary,
+    .profileGrid div,
+    .photoCard,
+    .compassInsight,
+    .sitterForm,
+    .cloudPane,
+    .notice,
+    .pushPanel
+  ),
+body[data-st-theme="violet"]
+  .modal
+  :is(
+    .lcPanel,
+    .task,
+    .growth,
+    .timeline,
+    .resourceTile,
+    .resourceNotice,
+    .deviceCard,
+    .deviceForm,
+    .studioTile,
+    .studioTheme,
+    .subtle,
+    .habitatSummary,
+    .profileGrid div,
+    .photoCard,
+    .compassInsight,
+    .sitterForm,
+    .cloudPane,
+    .notice,
+    .pushPanel
+  ),
+body[data-st-theme="cream"]
+  .modal
+  :is(
+    .lcPanel,
+    .task,
+    .growth,
+    .timeline,
+    .resourceTile,
+    .resourceNotice,
+    .deviceCard,
+    .deviceForm,
+    .studioTile,
+    .studioTheme,
+    .subtle,
+    .habitatSummary,
+    .profileGrid div,
+    .photoCard,
+    .compassInsight,
+    .sitterForm,
+    .cloudPane,
+    .notice,
+    .pushPanel
+  ) {
+  background: var(--t-card);
+  color: var(--t-text);
+  border-color: var(--t-border);
+}
+body[data-st-theme="forest"]
+  .modal
+  :is(
+    .profileHero,
+    .compassLead,
+    .lcNotice,
+    .tabs button,
+    .menuTile,
+    .cloudSafe,
+    .gaugeComingSoon
+  ),
+body[data-st-theme="violet"]
+  .modal
+  :is(
+    .profileHero,
+    .compassLead,
+    .lcNotice,
+    .tabs button,
+    .menuTile,
+    .cloudSafe,
+    .gaugeComingSoon
+  ),
+body[data-st-theme="cream"]
+  .modal
+  :is(
+    .profileHero,
+    .compassLead,
+    .lcNotice,
+    .tabs button,
+    .menuTile,
+    .cloudSafe,
+    .gaugeComingSoon
+  ) {
+  background: var(--t-soft);
+  color: var(--t-text);
+  border-color: var(--t-border);
+}
+body[data-st-theme="forest"] .modal :is(input, select, textarea, .lcEntry),
+body[data-st-theme="violet"] .modal :is(input, select, textarea, .lcEntry),
+body[data-st-theme="cream"] .modal :is(input, select, textarea, .lcEntry) {
+  background: var(--t-panel);
+  color: var(--t-text);
+  border-color: var(--t-border);
+}
+body[data-st-theme="forest"] .modal :is(input, textarea)::placeholder,
+body[data-st-theme="violet"] .modal :is(input, textarea)::placeholder {
+  color: var(--t-muted);
+  opacity: 0.8;
+}
+body[data-st-theme="forest"]
+  .modal
+  :is(.action, .deviceLink, .tabs button.selected),
+body[data-st-theme="violet"]
+  .modal
+  :is(.action, .deviceLink, .tabs button.selected),
+body[data-st-theme="cream"]
+  .modal
+  :is(.action, .deviceLink, .tabs button.selected) {
+  background: var(--t-action);
+  color: var(--t-action-ink);
+  border-color: var(--t-border);
+}
+body[data-st-theme="forest"]
+  .modal
+  :is(
+    .action.secondary,
+    .recordActions button,
+    .photoCard button,
+    .task button,
+    .smallbutton,
+    .close
+  ),
+body[data-st-theme="violet"]
+  .modal
+  :is(
+    .action.secondary,
+    .recordActions button,
+    .photoCard button,
+    .task button,
+    .smallbutton,
+    .close
+  ),
+body[data-st-theme="cream"]
+  .modal
+  :is(
+    .action.secondary,
+    .recordActions button,
+    .photoCard button,
+    .task button,
+    .smallbutton,
+    .close
+  ) {
+  background: var(--t-soft);
+  color: var(--t-text);
+}
+body[data-st-theme="forest"] .modal a,
+body[data-st-theme="violet"] .modal a,
+body[data-st-theme="cream"] .modal a {
+  color: var(--t-accent);
+}
+body[data-st-theme="forest"] .studioTheme[aria-pressed="true"],
+body[data-st-theme="violet"] .studioTheme[aria-pressed="true"],
+body[data-st-theme="cream"] .studioTheme[aria-pressed="true"] {
+  border-color: var(--t-accent);
+  outline-color: var(--t-accent);
+}
+/* Never recolor the approved illustrated home, login artwork, or guide illustrations. */
+
+/* Pending launch polish: self-contained, browser-specific install walkthrough. */
+.installDeviceChooser {
+  display: grid;
+  gap: 8px;
+  margin: 10px 0;
+}
+.installDevice {
+  border: 1px solid #d8c9df;
+  border-radius: 12px;
+  background: #fffaf7;
+  overflow: hidden;
+}
+.installDevice summary {
+  cursor: pointer;
+  padding: 12px 13px;
+  font:
+    bold 14px Arial,
+    sans-serif;
+  color: #45205b;
+  list-style-position: inside;
+  min-height: 20px;
+}
+.installDevice summary span {
+  float: right;
+  font:
+    600 11px Arial,
+    sans-serif;
+  color: #586c38;
+  padding-top: 3px;
+}
+.installDevice[open] summary {
+  background: #eee5f2;
+  border-bottom: 1px solid #ded0e3;
+}
+.installDevice ol {
+  margin: 10px 11px 12px 30px;
+  padding: 0;
+  display: grid;
+  gap: 9px;
+  font:
+    13px/1.5 Arial,
+    sans-serif;
+  color: #352a3a;
+}
+.installDevice li {
+  padding-left: 2px;
+}
+.installDevice a {
+  color: #52346c;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+.installDevice small {
+  font:
+    11px/1.45 Arial,
+    sans-serif;
+  display: block;
+  padding: 0 12px 12px;
+  color: #586345;
+}
+.installDevice :focus-visible {
+  outline: 2px solid #586c38;
+  outline-offset: 2px;
+}
+
+/* V3.20: Due Today refers to all care tasks, not just feeding. Cover the old baked-in fork icon with an accessible neutral calendar/check icon. */
+.dueUniversalIcon {
+  position: absolute;
+  left: 33.55%;
+  top: 7.2%;
+  width: 6%;
+  height: 7%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  background: #fef4ec;
+  border-radius: 9px;
+  z-index: 1;
+}
+.dueUniversalIcon svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  stroke: #374b2b;
+  stroke-width: 2.7;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+/* Keep all four dynamic dashboard totals on one baseline at any mobile width. */
+.counter {
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+/* 3.21 QA: distinct sign-in and signed-in welcome tour */
+.authBrandMini {
+  max-width: 560px;
+  margin: 0 auto 12px;
+  text-align: center;
+}
+.authBrandMini .authArt {
+  max-width: 100%;
+  max-height: 180px;
+  object-fit: cover;
+  border-radius: 16px;
+}
+.menuFeature {
+  width: 100%;
+  background: linear-gradient(115deg, #503066, #725088);
+  color: #fff;
+  border: 2px solid #ac8abf;
+  margin: 0 0 16px;
+  text-align: left;
+  box-shadow: 0 5px 16px rgba(69, 32, 91, 0.14);
+}
+.menuFeature strong,
+.menuFeature small {
+  color: #fff;
+}
+.studioIntro {
+  background: #f5eafa;
+}
+.tourShell {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  height: min(64vh, 620px);
+  min-height: 390px;
+  overflow: hidden;
+}
+.tourSlide {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 0 2px 12px;
+}
+.tourSlide h3 {
+  font:
+    italic 35px/1.15 Georgia,
+    serif;
+  color: #482060;
+  margin: 8px 0 12px;
+}
+.tourSlide p {
+  font-size: 19px;
+  line-height: 1.55;
+}
+.tourActions {
+  display: grid;
+  gap: 9px;
+  margin: 22px 0;
+}
+.tourPhone {
+  border: 1.5px solid #dbc4e2;
+  background: #fffaf7;
+  border-radius: 18px;
+  margin: 13px 0;
+  padding: 12px 15px;
+}
+.tourPhone summary {
+  font-size: 18px;
+  font-weight: bold;
+  color: #482060;
+  cursor: pointer;
+}
+.tourPhone li {
+  font-size: 17px;
+  line-height: 1.55;
+  margin: 10px 0;
+}
+.tourPhone a {
+  font-weight: bold;
+  text-decoration: underline;
+  color: #563876;
+}
+.tourPack {
+  background: #f5eafa;
+  border: 1.5px solid #d9bde3;
+  border-radius: 18px;
+  margin: 21px 0;
+  padding: 15px;
+}
+.tourPack h4 {
+  font:
+    italic 26px/1.2 Georgia,
+    serif;
+  color: #482060;
+  margin: 0;
+}
+.tourPack p {
+  font-size: 17px;
+}
+.tourPack small {
+  font-size: 13px;
+  display: block;
+  line-height: 1.4;
+}
+.tourNav {
+  display: flex;
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+  align-items: center;
+  border-top: 1px solid #decbe2;
+  padding: 14px 0 4px;
+  background: #fff9f4;
+}
+.tourNav .action {
+  width: auto;
+  flex: 0 0 auto;
+  font-size: 15px;
+  padding: 12px 16px;
+}
+.tourProgress {
+  font:
+    700 14px Arial,
+    sans-serif;
+  color: #586c38;
+  margin-right: auto;
+}
+@media (max-width: 440px) {
+  .tourSlide h3 {
+    font-size: 29px;
+  }
+  .tourSlide p {
+    font-size: 17px;
+  }
+  .tourNav .action {
+    font-size: 14px;
+    padding: 10px;
+  }
+}
