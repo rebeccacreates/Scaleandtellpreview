@@ -1015,7 +1015,7 @@ function tourGetAppMarkup() {
     tourDevice === "iphone"
       ? (inApp
           ? ""
-          : '<h4>1 · Add it to your Home Screen</h4><ol><li>Open <a href="' + link + '" target="_blank" rel="noopener noreferrer">Scale &amp; Tell</a> in <b>Safari</b>. (In Chrome: tap <b>•••</b>, then <b>Share</b>.)</li><li>Tap <b>Share</b> (the square with an arrow).</li><li>Scroll down and tap <b>Add to Home Screen</b>, then <b>Add</b>.</li><li>Open Scale &amp; Tell from its new icon and sign in.</li></ol>') +
+          : '<h4>1 · Add it to your Home Screen</h4><ol class="lcSteps"><li>Tap <b>Add to Home Screen</b> below. Your phone&#39;s share menu opens.</li><li>Scroll down the menu and tap <b>Add to Home Screen</b>, then <b>Add</b>.</li><li>Open Scale &amp; Tell from the new icon on your Home Screen.</li></ol><button class="action" type="button" onclick="installShare()">Add to Home Screen</button><p class="lcSmall">Not in the menu? Tap <b>Copy app link</b>, open <b>Safari</b>, paste the link, then tap Share → Add to Home Screen.</p><button class="action secondary" type="button" onclick="installCopyLink()">Copy app link</button><p class="lcSmall" id="installCopyNoteTour"></p>') +
         "<h4>" + (inApp ? "" : "2 · ") + 'Turn on reminders</h4><ol><li>Go to <b>Care Schedule</b> (the bell at the top).</li><li>Tap <b>Enable Reminders</b>, then <b>Allow</b> when your iPhone asks.</li><li>Tap <b>Send Test Notification</b> to make sure it works.</li></ol><p class="lcSmall">iPhone only allows notifications from the Home Screen app, not from a browser tab.</p>'
       : (inApp
           ? ""
@@ -2797,7 +2797,7 @@ function deviceDirectory() {
   );
 }
 
-const SCALE_LC_VERSION = "3.21.2";
+const SCALE_LC_VERSION = "3.21.4";
 const SCALE_SUPPORT_EMAIL = "scaleandtellsupport@gmail.com";
 const SCALE_LC_ICON = "icon-180.png";
 /* Android/desktop Chrome can install with one tap; iPhone only allows Share → Add to Home Screen. */
@@ -2823,9 +2823,22 @@ async function installNow() {
   installPromptEvent = null;
   render();
 }
+async function installShare() {
+  const url = new URL("./", location.href).href,
+    note = document.getElementById("installCopyNote");
+  if (navigator.share) {
+    try {
+      await navigator.share({ title: "Scale & Tell", url });
+      return;
+    } catch (e) {
+      if (e && e.name === "AbortError") return;
+    }
+  }
+  installCopyLink();
+}
 async function installCopyLink() {
   const link = new URL("./", location.href).href,
-    note = document.getElementById("installCopyNote");
+    note = document.getElementById("installCopyNote") || document.getElementById("installCopyNoteTour");
   try {
     await navigator.clipboard.writeText(link);
     if (note) note.textContent = "✓ Link copied. Paste it into Safari, then tap Share → Add to Home Screen.";
@@ -2839,8 +2852,7 @@ function installActionMarkup(isiOS) {
     return '<button class="action" type="button" onclick="installNow()">Install Scale &amp; Tell</button>';
   if (isiOS)
     return (
-      '<ol class="lcSteps"><li>Tap the <b>Share</b> button (square with an arrow). In Chrome it is in the address bar, or under <b>•••</b>.</li><li>Choose <b>Add to Home Screen</b> (scroll down the list if needed).</li><li>Tap <b>Add</b>, then open Scale &amp; Tell from your Home Screen.</li></ol>' +
-      '<button class="action secondary" type="button" onclick="installCopyLink()">Copy app link</button><p class="lcSmall" id="installCopyNote"></p>'
+      '<ol class="lcSteps"><li>Tap <b>Add to Home Screen</b> below. Your phone&#39;s share menu opens.</li><li>Scroll down the menu and tap <b>Add to Home Screen</b>, then <b>Add</b>.</li><li>Open Scale &amp; Tell from the new icon on your Home Screen.</li></ol><button class="action" type="button" onclick="installShare()">Add to Home Screen</button><p class="lcSmall">Not in the menu? Tap <b>Copy app link</b>, open <b>Safari</b>, paste the link, then tap Share → Add to Home Screen.</p><button class="action secondary" type="button" onclick="installCopyLink()">Copy app link</button><p class="lcSmall" id="installCopyNote"></p>'
     );
   return "";
 }
@@ -7287,7 +7299,7 @@ function pushNote(text) {
 }
 function pushSettingsMarkup() {
   let state = pushInstalledIOS()
-    ? "On iPhone, first open Scale & Tell from its Home Screen icon."
+    ? "Reminders are almost ready."
     : !pushCapable()
       ? "Phone alerts are not available in this browser. You can still use Care Schedule."
       : !pushConfigChecked
@@ -7308,6 +7320,9 @@ function pushSettingsMarkup() {
   return (
     '<div class="pushPanel"><h3>🔔 Phone care reminders</h3><p>' +
     esc(state) +
+    (pushInstalledIOS()
+      ? '</p><p><b>iPhone only allows reminders from the Home Screen app.</b></p><ol class="lcSteps"><li>Tap <b>Add to Home Screen</b> below. Your phone&#39;s share menu opens.</li><li>Scroll down the menu and tap <b>Add to Home Screen</b>, then <b>Add</b>.</li><li>Open Scale &amp; Tell from the new icon on your Home Screen.</li></ol><button class="action" type="button" onclick="installShare()">Add to Home Screen</button><p class="lcSmall">Not in the menu? Tap <b>Copy app link</b>, open <b>Safari</b>, paste the link, then tap Share → Add to Home Screen.</p><button class="action secondary" type="button" onclick="installCopyLink()">Copy app link</button><p class="lcSmall" id="installCopyNote">'
+      : "") +
     '</p><label>Daily reminder time<select id="pushHourChoice" onchange="pushSetHour(this.value)">' +
     Array.from(
       { length: 24 },
