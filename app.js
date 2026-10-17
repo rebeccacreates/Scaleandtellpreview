@@ -1001,6 +1001,43 @@ function founderOpenPrint(kind) {
 }
 
 let tourStep = 0;
+let tourDevice = /Android/i.test(navigator.userAgent || "") ? "android" : "iphone";
+function tourSetDevice(d) {
+  tourDevice = d;
+  render();
+}
+function tourGetAppMarkup() {
+  const link = "https://rebeccacreates.github.io/Scaleandtellpreview/";
+  const tab = (id, label) =>
+    '<button type="button" class="tourTab' + (tourDevice === id ? " on" : "") + '" aria-pressed="' + (tourDevice === id) + '" onclick="tourSetDevice(\'' + id + '\')">' + label + "</button>";
+  const inApp = installStandalone();
+  const steps =
+    tourDevice === "iphone"
+      ? (inApp
+          ? ""
+          : '<h4>1 · Add it to your Home Screen</h4><ol><li>Open <a href="' + link + '" target="_blank" rel="noopener noreferrer">Scale &amp; Tell</a> in <b>Safari</b>. (In Chrome: tap <b>•••</b>, then <b>Share</b>.)</li><li>Tap <b>Share</b> (the square with an arrow).</li><li>Scroll down and tap <b>Add to Home Screen</b>, then <b>Add</b>.</li><li>Open Scale &amp; Tell from its new icon and sign in.</li></ol>') +
+        "<h4>" + (inApp ? "" : "2 · ") + 'Turn on reminders</h4><ol><li>Go to <b>Care Schedule</b> (the bell at the top).</li><li>Tap <b>Enable Reminders</b>, then <b>Allow</b> when your iPhone asks.</li><li>Tap <b>Send Test Notification</b> to make sure it works.</li></ol><p class="lcSmall">iPhone only allows notifications from the Home Screen app, not from a browser tab.</p>'
+      : (inApp
+          ? ""
+          : '<h4>1 · Install the app</h4>' +
+            (installPromptEvent
+              ? '<button class="action" type="button" onclick="installNow()">Install Scale &amp; Tell</button>'
+              : '<ol><li>Open <a href="' + link + '" target="_blank" rel="noopener noreferrer">Scale &amp; Tell</a> in <b>Chrome</b>.</li><li>Tap the <b>⋮</b> menu.</li><li>Tap <b>Install app</b> or <b>Add to Home screen</b>.</li><li>Open Scale &amp; Tell from its new icon and sign in.</li></ol>')) +
+        "<h4>" + (inApp ? "" : "2 · ") + 'Turn on reminders</h4><ol><li>Go to <b>Care Schedule</b> (the bell at the top).</li><li>Tap <b>Enable Reminders</b>, then <b>Allow</b>.</li><li>Tap <b>Send Test Notification</b> to make sure it works.</li></ol>';
+  return (
+    '<div class="tourSlide"><h3>Get the app &amp; reminders ♡</h3><div class="tourTabs" role="group" aria-label="Choose your phone">' +
+    tab("iphone", "🍎 iPhone") +
+    tab("android", "🤖 Android") +
+    "</div>" +
+    (inApp ? '<p class="lcSmall">✓ You are already using the installed app.</p>' : "") +
+    steps +
+    '<div class="tourActions">' +
+    (inApp
+      ? '<button class="action" type="button" onclick="tourDone();openPanel(\'Calendar\')">Turn on reminders now</button>'
+      : '<button class="action secondary" type="button" onclick="installCopyLink()">Copy app link</button>') +
+    '</div><p class="lcSmall" id="installCopyNote"></p></div>'
+  );
+}
 function tourMarkup() {
   const nav =
     '<div class="tourNav"><button type="button" class="action secondary" onclick="tourDone()">Skip tour</button>' +
@@ -1020,12 +1057,10 @@ function tourMarkup() {
   if (tourStep === 0)
     page =
       '<div class="tourSlide"><p>One private place to keep your animals, feeding and shed history, photos, habitat notes, and reminders.</p><p>Core care tracking, backups, and your account journal are free.</p><div class="tourActions"><button class="action secondary" onclick="tourDone(\'add\')">+ Add my first animal</button><button class="action secondary" onclick="tourDone(\'import\')">Import existing records</button></div><p class="lcSmall">You can also explore care guides without entering any personal records.</p></div>';
-  if (tourStep === 1)
-    page =
-      '<div class="tourSlide"><h3>Take Scale &amp; Tell with you</h3><p>Choose your phone below. The link to open the app is right in the steps.</p><details class="tourPhone"><summary>🍎 iPhone / iPad · show steps</summary><ol><li>Tap <a href="https://rebeccacreates.github.io/Scaleandtellpreview/" target="_blank" rel="noopener noreferrer">Open Scale &amp; Tell ↗</a> in Safari.</li><li>Tap <b>Share</b> (square with arrow).</li><li><b>Scroll down</b> to <b>Add to Home Screen</b>.</li><li>Tap <b>Add</b>, then open the new icon.</li></ol></details><details class="tourPhone"><summary>🤖 Android · show steps</summary><ol><li>Tap <a href="https://rebeccacreates.github.io/Scaleandtellpreview/" target="_blank" rel="noopener noreferrer">Open Scale &amp; Tell ↗</a> in Chrome.</li><li>Tap <b>⋮ menu</b>.</li><li>Choose <b>Add to Home screen</b> or <b>Install app</b>.</li><li>Tap <b>Add</b> or <b>Install</b>.</li></ol></details><div class="tourPack"><h4>Here’s what you get as a Founding Keeper ♡</h4><p><b>$14.99 once · optional.</b> Four app designs (classic + three additional themes), personalized Care Binder, My Year in Scales, and large printable keeper cards.</p><button class="action secondary" onclick="tourDone(\'founder\')">View the Founding Keeper benefits</button><small>Designs are viewable, but paid features cannot be selected or opened before a verified purchase. Checkout is not live yet.</small></div></div>';
+  if (tourStep === 1) page = tourGetAppMarkup();
   if (tourStep === 2)
     page =
-      '<div class="tourSlide"><h3>Care reminders, on your schedule ♡</h3><p>After adding Scale &amp; Tell to your Home Screen, open it, sign in, then go to <b>Care Schedule → Enable Reminders</b>.</p><p>Only then will your phone ask you to allow notifications. Start with 5 PM or choose a different time. Reminders are optional; no permission request happens during signup.</p><p class="lcSmall">A real test notification must be received before we turn on scheduled delivery for everyone.</p></div>';
+      '<div class="tourSlide"><div class="tourPack"><h4>Here’s what you get as a Founding Keeper ♡</h4><p><b>$14.99 once · optional.</b> Four app designs (classic + three additional themes), personalized Care Binder, My Year in Scales, and large printable keeper cards.</p><button class="action secondary" onclick="tourDone(\'founder\')">View the Founding Keeper benefits</button><small>Designs are viewable, but paid features cannot be selected or opened before a verified purchase.</small></div><p>Everything else, your animals, care logs, reminders, photos and backups, is free.</p></div>';
   return '<div class="tourShell" aria-live="polite">' + page + nav + "</div>";
 }
 function tourGo(step) {
