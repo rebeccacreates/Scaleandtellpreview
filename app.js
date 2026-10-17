@@ -1019,7 +1019,7 @@ function tourMarkup() {
   let page = "";
   if (tourStep === 0)
     page =
-      '<div class="tourSlide"><h3>Your little ecosystem ♡</h3><p>One private place to keep your animals, feeding and shed history, photos, habitat notes, and reminders.</p><p>Core care tracking, backups, and your account journal are free.</p><div class="tourActions"><button class="action secondary" onclick="tourDone(\'add\')">+ Add my first animal</button><button class="action secondary" onclick="tourDone(\'import\')">Import existing records</button></div><p class="lcSmall">You can also explore care guides without entering any personal records.</p></div>';
+      '<div class="tourSlide"><p>One private place to keep your animals, feeding and shed history, photos, habitat notes, and reminders.</p><p>Core care tracking, backups, and your account journal are free.</p><div class="tourActions"><button class="action secondary" onclick="tourDone(\'add\')">+ Add my first animal</button><button class="action secondary" onclick="tourDone(\'import\')">Import existing records</button></div><p class="lcSmall">You can also explore care guides without entering any personal records.</p></div>';
   if (tourStep === 1)
     page =
       '<div class="tourSlide"><h3>Take Scale &amp; Tell with you</h3><p>Choose your phone below. The link to open the app is right in the steps.</p><details class="tourPhone"><summary>🍎 iPhone / iPad · show steps</summary><ol><li>Tap <a href="https://rebeccacreates.github.io/Scaleandtellpreview/" target="_blank" rel="noopener noreferrer">Open Scale &amp; Tell ↗</a> in Safari.</li><li>Tap <b>Share</b> (square with arrow).</li><li><b>Scroll down</b> to <b>Add to Home Screen</b>.</li><li>Tap <b>Add</b>, then open the new icon.</li></ol></details><details class="tourPhone"><summary>🤖 Android · show steps</summary><ol><li>Tap <a href="https://rebeccacreates.github.io/Scaleandtellpreview/" target="_blank" rel="noopener noreferrer">Open Scale &amp; Tell ↗</a> in Chrome.</li><li>Tap <b>⋮ menu</b>.</li><li>Choose <b>Add to Home screen</b> or <b>Install app</b>.</li><li>Tap <b>Add</b> or <b>Install</b>.</li></ol></details><div class="tourPack"><h4>Here’s what you get as a Founding Keeper ♡</h4><p><b>$14.99 once · optional.</b> Four app designs (classic + three additional themes), personalized Care Binder, My Year in Scales, and large printable keeper cards.</p><button class="action secondary" onclick="tourDone(\'founder\')">View the Founding Keeper benefits</button><small>Designs are viewable, but paid features cannot be selected or opened before a verified purchase. Checkout is not live yet.</small></div></div>';
@@ -2762,9 +2762,53 @@ function deviceDirectory() {
   );
 }
 
-const SCALE_LC_VERSION = "3.21.1";
+const SCALE_LC_VERSION = "3.21.2";
 const SCALE_SUPPORT_EMAIL = "scaleandtellsupport@gmail.com";
 const SCALE_LC_ICON = "icon-180.png";
+/* Android/desktop Chrome can install with one tap; iPhone only allows Share → Add to Home Screen. */
+let installPromptEvent = null;
+window.addEventListener("beforeinstallprompt", (e) => {
+  e.preventDefault();
+  installPromptEvent = e;
+  if (current === "Get the App") render();
+});
+window.addEventListener("appinstalled", () => {
+  installPromptEvent = null;
+  if (current === "Get the App") render();
+});
+function installStandalone() {
+  return window.matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+}
+async function installNow() {
+  if (!installPromptEvent) return;
+  installPromptEvent.prompt();
+  try {
+    await installPromptEvent.userChoice;
+  } catch (e) {}
+  installPromptEvent = null;
+  render();
+}
+async function installCopyLink() {
+  const link = new URL("./", location.href).href,
+    note = document.getElementById("installCopyNote");
+  try {
+    await navigator.clipboard.writeText(link);
+    if (note) note.textContent = "✓ Link copied. Paste it into Safari, then tap Share → Add to Home Screen.";
+  } catch (e) {
+    if (note) note.textContent = link;
+  }
+}
+function installActionMarkup(isiOS) {
+  if (installStandalone()) return '<p class="lcSmall">✓ You are using the installed app.</p>';
+  if (installPromptEvent)
+    return '<button class="action" type="button" onclick="installNow()">Install Scale &amp; Tell</button>';
+  if (isiOS)
+    return (
+      '<ol class="lcSteps"><li>Tap the <b>Share</b> button (square with an arrow). In Chrome it is in the address bar, or under <b>•••</b>.</li><li>Choose <b>Add to Home Screen</b> (scroll down the list if needed).</li><li>Tap <b>Add</b>, then open Scale &amp; Tell from your Home Screen.</li></ol>' +
+      '<button class="action secondary" type="button" onclick="installCopyLink()">Copy app link</button><p class="lcSmall" id="installCopyNote"></p>'
+    );
+  return "";
+}
 function installGuideMarkup() {
   const ua = navigator.userAgent || "";
   const isiOS = /iPhone|iPad|iPod/i.test(ua),
@@ -2778,8 +2822,9 @@ function installGuideMarkup() {
   return (
     '<p class="lcLead">Keep your reptile journal one tap away. <a href="https://rebeccacreates.github.io/Scaleandtellpreview/" target="_blank" rel="noopener noreferrer"><b>Open Scale &amp; Tell ↗</b></a></p><div class="lcPanel"><div class="lcIconPreview"><img src="' +
     SCALE_LC_ICON +
-    '" alt="Scale & Tell icon"><div><h3>Scale & Tell ♡</h3><p>Your little ecosystem, a tap away.</p></div></div>' +
+    '" alt="Scale & Tell icon"><div><h3>Scale & Tell ♡</h3><p>Your reptile journal, one tap away.</p></div></div>' +
     intro +
+    installActionMarkup(isiOS) +
     (isiOSChrome
       ? '<p class="lcSmall">If you are in a different iPhone browser, first open the preview link in Safari.</p>'
       : "") +
@@ -3057,7 +3102,6 @@ function render() {
             "</b><small>" +
             esc(species[a] || "Other") +
             "</small>" +
-            (i < 3 ? '<span class="rosterTag">Home card ' + (i + 1) + "</span>" : "") +
             '</div><button class="action secondary" onclick="openAnimalAt(' +
             i +
             ')">Open</button></div><details class="rosterManage"><summary>Manage ' +
