@@ -8,7 +8,7 @@ self.addEventListener('push', event => {
   const title = typeof payload.title === 'string' && payload.title.trim() ? payload.title.slice(0, 90) : 'Scale & Tell';
   const body = typeof payload.body === 'string' && payload.body.trim() ? payload.body.slice(0, 250) : 'Open your Care Schedule to review what is due.';
   event.waitUntil(self.registration.showNotification(title, {
-    body, icon: './icons/icon-192.png', badge: './icons/icon-192.png',
+    body, icon: './icon-192.png', badge: './icon-192.png',
     tag: 'scale-tell-care', renotify: false, data: { openCareSchedule: true }
   }));
 });
