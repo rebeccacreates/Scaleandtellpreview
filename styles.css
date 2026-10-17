@@ -2863,3 +2863,14 @@ body[data-st-theme="cream"] .studioTheme[aria-pressed="true"] {
 .tourSlide ol { margin: 4px 0 8px 18px; padding: 0; line-height: 1.5; }
 /* Let iPhone Chrome scroll so its address bar can come back */
 html, body { min-height: calc(100% + 1px); }
+/* 3.22: checklists and multiple reminder times */
+.checklist { margin: 6px 0 4px; display: grid; gap: 4px; }
+.checkItem { display: flex; gap: 8px; align-items: center; font-weight: 400; margin: 0; }
+.checkItem input { width: 20px; height: 20px; margin: 0; flex: none; }
+.remTimeList { display: grid; gap: 6px; margin: 4px 0; }
+.remTimeRow { display: flex; gap: 8px; align-items: center; }
+.remTimeRow input { flex: 1; margin: 0; }
+
+.founderCheckout { margin-top: 12px; }
+.founderTestNote { background: #fff3cd; color: #5c4400; border-radius: 10px; padding: 8px 10px; font-size: 13px; margin: 0 0 10px; }
+#paypalButtons { min-height: 50px; }

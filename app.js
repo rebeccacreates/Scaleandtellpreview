@@ -760,13 +760,111 @@ function founderPackAction(kind, label) {
     ? '<button class="action" onclick="founderOpenPrint(\'' + kind + "')\">" + label + "</button>"
     : "";
 }
+/* ===================== V3.22 · Founding Keeper checkout (PayPal) ===================== */
+const PAYPAL_CLIENT_ID = "AVBNQskIpNX-tEzobHtkLhqjJgiVZNSrePd5VzQ8Kx4zLaX7_cqCNVTp3Usui0UYJvJ75RLRf5xscQ-K",
+  PAYPAL_TEST_MODE = true;
+let paypalSdkLoader = null,
+  founderPaying = false;
+function founderCheckoutMarkup() {
+  if (!cloudSession) return '<p class="lcSmall">Sign in to purchase.</p>';
+  return (
+    '<div class="founderCheckout">' +
+    (PAYPAL_TEST_MODE
+      ? '<p class="founderTestNote">Test mode: use a PayPal sandbox account. No real money is charged.</p>'
+      : "") +
+    '<div id="paypalButtons" aria-label="Pay with PayPal"></div><p id="founderPayStatus" class="studioStatus" role="status"></p></div>'
+  );
+}
+function founderPayStatus(msg) {
+  const el = document.getElementById("founderPayStatus");
+  if (el) el.textContent = msg;
+}
+function founderLoadPayPal() {
+  if (window.paypal?.Buttons) return Promise.resolve(window.paypal);
+  if (paypalSdkLoader) return paypalSdkLoader;
+  paypalSdkLoader = new Promise((resolve, reject) => {
+    const tag = document.createElement("script");
+    tag.src =
+      "https://www.paypal.com/sdk/js?client-id=" +
+      encodeURIComponent(PAYPAL_CLIENT_ID) +
+      "&currency=USD&intent=capture&components=buttons&enable-funding=venmo";
+    tag.onload = () => (window.paypal?.Buttons ? resolve(window.paypal) : reject(Error("PayPal did not load.")));
+    tag.onerror = () => reject(Error("PayPal could not load. Check your connection and try again."));
+    document.head.appendChild(tag);
+  }).catch((e) => {
+    paypalSdkLoader = null;
+    throw e;
+  });
+  return paypalSdkLoader;
+}
+async function founderInvoke(body) {
+  const { data, error } = await cloudClient.functions.invoke("founder-checkout", { body });
+  if (error) {
+    let msg = "";
+    try {
+      msg = (await error.context?.json?.())?.error || "";
+    } catch (e) {}
+    throw Error(msg || "Checkout is unavailable right now. Please try again.");
+  }
+  return data || {};
+}
+async function founderMountPayPal() {
+  const box = document.getElementById("paypalButtons");
+  if (!box || box.dataset.mounted || stCanUsePack() || !cloudSession || !cloudClient) return;
+  box.dataset.mounted = "1";
+  founderPayStatus("Loading secure checkout…");
+  try {
+    const paypal = await founderLoadPayPal();
+    if (!document.body.contains(box)) return;
+    founderPayStatus("");
+    await paypal
+      .Buttons({
+        style: { layout: "vertical", color: "gold", shape: "pill", label: "pay", height: 45 },
+        createOrder: async () => {
+          founderPayStatus("");
+          const data = await founderInvoke({ action: "create" });
+          if (data.active) {
+            founderPayStatus("✓ You already have Founding Keeper access.");
+            founderRefreshEntitlement();
+            throw Error("already owned");
+          }
+          if (!data.id) throw Error(data.error || "Could not start checkout.");
+          return data.id;
+        },
+        onApprove: async (d) => {
+          if (founderPaying) return;
+          founderPaying = true;
+          founderPayStatus("Confirming your payment with PayPal…");
+          try {
+            const data = await founderInvoke({ action: "capture", orderId: d.orderID });
+            if (!data.active) throw Error(data.error || "Payment could not be confirmed.");
+            founderPayStatus("✓ Thank you, Founding Keeper ♡ Everything is unlocked.");
+            await founderRefreshEntitlement();
+          } catch (e) {
+            founderPayStatus(e?.message || "Payment could not be confirmed. If you were charged, contact " + SCALE_SUPPORT_EMAIL + ".");
+          } finally {
+            founderPaying = false;
+          }
+        },
+        onCancel: () => founderPayStatus("Checkout cancelled. You were not charged."),
+        onError: (err) => {
+          if (String(err?.message || err).includes("already owned")) return;
+          founderPayStatus("Something went wrong with checkout. You were not charged. Please try again.");
+        },
+      })
+      .render(box);
+  } catch (e) {
+    box.dataset.mounted = "";
+    founderPayStatus(e?.message || "Checkout could not load.");
+  }
+}
 function founderStudioMarkup() {
   let access = stCanUsePack();
   return (
-    '<div class="studioTile studioIntro"><h3>Here’s what you get as a Founding Keeper ♡</h3><p><strong>$14.99 · one-time, optional.</strong> Your everyday care tracking and cloud journal remain free.</p><p>Browse everything included below. Checkout is still being tested, so this preview cannot accept money yet.</p>' +
+    '<div class="studioTile studioIntro"><h3>Here’s what you get as a Founding Keeper ♡</h3><p><strong>$14.99 · one-time, optional.</strong> Your everyday care tracking and cloud journal remain free.</p><p>Browse everything included below.</p>' +
     (access
       ? '<p class="studioPackNote">✓ Your verified Founding Keeper access is active.</p>'
-      : '<p class="studioPackNote">Purchased features unlock automatically after a verified payment. No subscription.</p>') +
+      : '<p class="studioPackNote">Unlocks automatically on this account right after payment. No subscription.</p>' + founderCheckoutMarkup()) +
     "</div>" +
     '<div class="studioTile"><h3>Four beautiful app looks ♡</h3><p>The classic look is free. Preview the three additional styles here; applying them requires a verified Founding Keeper purchase.</p><div class="studioThemes">' +
     founderThemeButton("original", "Classic lavender and ivory", "#f4e5f3", "#fff8f3", "#79538e") +
@@ -787,7 +885,7 @@ function founderStudioMarkup() {
     '<div class="studioTile"><h3>Keeper Printables</h3><p>Large photo-based enclosure cards, emergency quick-reference cards and a blank feeding record.</p>' +
     founderPackAction("printables", "Open Keeper Printables") +
     "</div>" +
-    '<p class="lcSmall">No recurring charge. Payments will be enabled only after sandbox checkout, account unlock and refund testing succeed. The journal, reminders and backup remain free.</p>'
+    '<p class="lcSmall">One-time $14.99, no recurring charge. Paid securely through PayPal (PayPal balance or card). Your journal, reminders and backups stay free.</p>'
   );
 }
 function founderText(x) {
@@ -1022,7 +1120,7 @@ function tourGetAppMarkup() {
           : '<h4>1 · Install the app</h4>' +
             (installPromptEvent
               ? '<button class="action" type="button" onclick="installNow()">Install Scale &amp; Tell</button>'
-              : '<ol><li>Open <a href="' + link + '" target="_blank" rel="noopener noreferrer">Scale &amp; Tell</a> in <b>Chrome</b>.</li><li>Tap the <b>⋮</b> menu.</li><li>Tap <b>Install app</b> or <b>Add to Home screen</b>.</li><li>Open Scale &amp; Tell from its new icon and sign in.</li></ol>')) +
+              : '<ol><li>Open <a href="' + link + '" target="_blank" rel="noopener noreferrer">Scale &amp; Tell</a> in <b>Chrome</b>.</li><li>Tap the <b>⋮</b> menu.</li><li>Tap <b>Install app</b> or <b>Add to Home screen</b>.</li><li>Open Scale &amp; Tell from its new icon and sign in.</li></ol><p class="lcSmall">Samsung Internet: tap <b>☰</b> → <b>Add page to</b> → <b>Home screen</b>. Firefox: tap <b>⋮</b> → <b>Add app to Home screen</b>.</p>')) +
         "<h4>" + (inApp ? "" : "2 · ") + 'Turn on reminders</h4><ol><li>Go to <b>Care Schedule</b> (the bell at the top).</li><li>Tap <b>Enable Reminders</b>, then <b>Allow</b>.</li><li>Tap <b>Send Test Notification</b> to make sure it works.</li></ol>';
   return (
     '<div class="tourSlide"><h3>Get the app &amp; reminders ♡</h3><div class="tourTabs" role="group" aria-label="Choose your phone">' +
@@ -1939,14 +2037,307 @@ function niceDate(v) {
     year: "numeric",
   });
 }
+function advanceMonths(date, months, anchorDay) {
+  let [y, m, d] = date.split("-").map(Number);
+  const day = anchorDay || d;
+  m += months;
+  y += Math.floor((m - 1) / 12);
+  m = ((m - 1) % 12 + 12) % 12 + 1;
+  const last = new Date(y, m, 0).getDate();
+  return [y, String(m).padStart(2, "0"), String(Math.min(day, last)).padStart(2, "0")].join("-");
+}
+const REPEAT_CHOICES = [
+  ["0", "One time only"],
+  ["1", "Daily"],
+  ["2", "Every 2 days"],
+  ["3", "Every 3 days"],
+  ["7", "Weekly"],
+  ["14", "Every 2 weeks"],
+  ["m1", "Monthly (same date)"],
+  ["custom", "Custom number of days"],
+];
+function repeatSelectMarkup(selId, customId, labelId, e) {
+  const months = Number(e?.repeatMonths) || 0,
+    days = Number(e?.repeatDays) || 0,
+    current = months ? "m" + months : String(days),
+    preset = REPEAT_CHOICES.some(([v]) => v === current);
+  const value = preset ? current : "custom";
+  return (
+    '<label>Repeat<select id="' +
+    selId +
+    '" onchange="document.getElementById(\'' +
+    labelId +
+    "').hidden=this.value!=='custom'\">" +
+    REPEAT_CHOICES.map(([v, t]) => '<option value="' + v + '"' + (v === value ? " selected" : "") + ">" + t + "</option>").join("") +
+    '</select></label><label id="' +
+    labelId +
+    '"' +
+    (value === "custom" ? "" : " hidden") +
+    '>Repeat every how many days?<input type="number" id="' +
+    customId +
+    '" min="1" max="365" step="1" placeholder="e.g. 8" value="' +
+    (value === "custom" ? days : "") +
+    '"></label>'
+  );
+}
+/* Returns {repeatDays, repeatMonths} or null after explaining the problem. */
+function readRepeat(selId, customId) {
+  const v = document.getElementById(selId)?.value || "0";
+  if (v.startsWith("m")) return { repeatDays: 0, repeatMonths: Number(v.slice(1)) || 1 };
+  const days = v === "custom" ? Number(document.getElementById(customId)?.value) : Number(v);
+  if (!Number.isInteger(days) || days < 0 || days > 365 || (v === "custom" && days < 1)) {
+    alert("Enter a repeat interval between 1 and 365 days, or choose One time only.");
+    return null;
+  }
+  return { repeatDays: days, repeatMonths: 0 };
+}
 function advanceDate(date, days) {
   let [y, m, d] = date.split("-").map(Number),
     v = new Date(y, m - 1, d, 12);
   v.setDate(v.getDate() + days);
   return [v.getFullYear(), String(v.getMonth() + 1).padStart(2, "0"), String(v.getDate()).padStart(2, "0")].join("-");
 }
+
+/* ===================== V3.22 · care-log reminders, checklists, multiple times, UVB & supplements ===================== */
+const REMINDER_LOG = {
+  "Feeding reminder": ["Feeding Tracker", ""],
+  "Enclosure reminder": ["Enclosure Care", ""],
+  "Weight check": ["Weight Tracker", ""],
+  "Shed / molt check": ["Shed History", ""],
+  "UVB bulb change": ["UVB & Lighting", "UVB bulb change"],
+  "Supplement": ["Supplements", ""],
+  "Medication / veterinary follow-up": ["Health & Vet", ""],
+};
+let pendingLogDetail = "";
+function remTimeLabel(t) {
+  const [h, m] = String(t).split(":").map(Number);
+  return new Date(2026, 0, 1, h, m).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+}
+function remTimeInputs(listId, times) {
+  const list = times && times.length ? times : ["08:00"];
+  return (
+    '<div id="' +
+    listId +
+    '" class="remTimeList">' +
+    list
+      .map(
+        (t) =>
+          '<div class="remTimeRow"><input type="time" class="remTime" value="' +
+          esc(t) +
+          '" aria-label="Reminder time"><button type="button" class="smallbutton" onclick="reminderRemoveTime(this)" aria-label="Remove this time">✕</button></div>',
+      )
+      .join("") +
+    '</div><button type="button" class="action secondary" onclick="reminderAddTime(\'' +
+    listId +
+    "')\">+ Add another time</button>"
+  );
+}
+function reminderAddTime(listId) {
+  const list = document.getElementById(listId);
+  if (!list) return;
+  if (list.querySelectorAll(".remTime").length >= 6) return alert("You can set up to 6 times per reminder.");
+  const row = document.createElement("div");
+  row.className = "remTimeRow";
+  row.innerHTML =
+    '<input type="time" class="remTime" value="20:00" aria-label="Reminder time"><button type="button" class="smallbutton" onclick="reminderRemoveTime(this)" aria-label="Remove this time">✕</button>';
+  list.appendChild(row);
+}
+function reminderRemoveTime(btn) {
+  const row = btn.closest(".remTimeRow"),
+    list = row?.parentElement;
+  if (list && list.querySelectorAll(".remTimeRow").length > 1) row.remove();
+  else if (row) row.querySelector(".remTime").value = "";
+}
+function reminderReadTimes(listId) {
+  const out = [];
+  for (const el of document.querySelectorAll("#" + listId + " .remTime")) {
+    const v = (el.value || "").slice(0, 5);
+    if (/^([01]\d|2[0-3]):[0-5]\d$/.test(v) && !out.includes(v)) out.push(v);
+  }
+  return out.sort().slice(0, 6);
+}
+function reminderExtraFields() {
+  return (
+    '<div id="remChecklist" hidden><label>Checklist name<input id="remTitle" maxlength="80" placeholder="e.g. Weekly tank clean"></label><label>Checklist items, one per line<textarea id="remItems" maxlength="1500" placeholder="Spot clean&#10;Fresh water&#10;Wipe the glass"></textarea></label></div>' +
+    '<label>Notify me<select id="remTimeMode" onchange="reminderTimeModeChanged()"><option value="daily">With my daily summary</option><option value="times">At specific times</option></select></label><div id="remTimes" hidden>' +
+    remTimeInputs("remTimeList", ["08:00"]) +
+    '<p class="helperLine">Add as many times as you need, for example morning and evening misting.</p></div>'
+  );
+}
+function reminderKindChanged() {
+  const checklist = document.getElementById("remKind")?.value === "checklist";
+  const detailLabel = document.getElementById("detail")?.closest("label");
+  if (detailLabel) detailLabel.hidden = checklist;
+  const box = document.getElementById("remChecklist");
+  if (box) box.hidden = !checklist;
+}
+function reminderTimeModeChanged() {
+  const box = document.getElementById("remTimes");
+  if (box) box.hidden = document.getElementById("remTimeMode")?.value !== "times";
+}
+/* Reads the Add Reminder form. Returns null (after telling the keeper why) if something is missing. */
+function reminderFormValues(detail) {
+  const kind = document.getElementById("remKind")?.value === "checklist" ? "checklist" : "care";
+  const extra = { kind };
+  if (kind === "checklist") {
+    const title = (document.getElementById("remTitle")?.value || "").trim().slice(0, 80),
+      items = (document.getElementById("remItems")?.value || "")
+        .split(/\r?\n/)
+        .map((x) => x.trim().slice(0, 100))
+        .filter(Boolean)
+        .slice(0, 25);
+    if (!title || !items.length) {
+      alert("Give the checklist a name and at least one item.");
+      return null;
+    }
+    detail = title;
+    extra.checklist = items.map((t) => ({ t, done: false }));
+  } else if (REMINDER_LOG[detail]) extra.logSection = REMINDER_LOG[detail][0];
+  if (document.getElementById("remTimeMode")?.value === "times") {
+    const times = reminderReadTimes("remTimeList");
+    if (!times.length) {
+      alert("Add at least one time, or choose to be notified with your daily summary.");
+      return null;
+    }
+    extra.times = times;
+  }
+  return { detail, extra };
+}
+function reminderTimesText(e) {
+  return Array.isArray(e.times) && e.times.length ? " · 🔔 " + e.times.map(remTimeLabel).join(", ") : "";
+}
+function checklistMarkup(e, i) {
+  if (!Array.isArray(e.checklist) || !e.checklist.length) return "";
+  const doneCount = e.checklist.filter((x) => x.done).length;
+  return (
+    '<div class="checklist"><small>' +
+    doneCount +
+    " of " +
+    e.checklist.length +
+    " done</small>" +
+    e.checklist
+      .map(
+        (x, j) =>
+          '<label class="checkItem"><input type="checkbox" ' +
+          (x.done ? "checked " : "") +
+          (e.done ? "disabled " : "") +
+          'onchange="toggleChecklistItem(' +
+          i +
+          "," +
+          j +
+          ')"> ' +
+          esc(x.t) +
+          "</label>",
+      )
+      .join("") +
+    "</div>"
+  );
+}
+function toggleChecklistItem(i, j) {
+  const e = entries[i];
+  if (!e || e.done || !Array.isArray(e.checklist) || !e.checklist[j]) return;
+  const before = structuredClone(e.checklist);
+  e.checklist = e.checklist.map((x, k) => (k === j ? { ...x, done: !x.done } : x));
+  try {
+    save();
+  } catch (err) {
+    e.checklist = before;
+    alert("Could not save this change.");
+  }
+  render();
+}
+/* What a repeating reminder carries into its next occurrence. */
+function reminderCarryOver(e) {
+  const out = {};
+  if (e.kind) out.kind = e.kind;
+  if (e.logSection) out.logSection = e.logSection;
+  if (Array.isArray(e.times) && e.times.length) out.times = [...e.times];
+  if (Array.isArray(e.checklist)) out.checklist = e.checklist.map((x) => ({ t: x.t, done: false }));
+  return out;
+}
+function reminderOfferLog(e) {
+  if (!e || e.kind === "checklist") return;
+  const m = REMINDER_LOG[e.detail];
+  if (!m || !animals.includes(e.animal)) return;
+  const label = m[0] === "Calendar" ? "your care log" : m[0];
+  if (confirm("Done ♡ Would you like to add this to " + label + " for " + e.animal + " now?")) {
+    pendingLogDetail = m[1];
+    openPanel(m[0], e.animal);
+  }
+}
+function reminderEditExtraFields(e) {
+  const checklist = Array.isArray(e.checklist);
+  return (
+    (checklist
+      ? '<label>Checklist items, one per line<textarea id="reminderEditItems" maxlength="1500">' +
+        esc(e.checklist.map((x) => x.t).join("\n")) +
+        "</textarea></label>"
+      : "") +
+    '<label>Notify me<select id="reminderEditTimeMode" onchange="document.getElementById(\'reminderEditTimes\').hidden=this.value!==\'times\'"><option value="daily"' +
+    (e.times?.length ? "" : " selected") +
+    '>With my daily summary</option><option value="times"' +
+    (e.times?.length ? " selected" : "") +
+    '>At specific times</option></select></label><div id="reminderEditTimes"' +
+    (e.times?.length ? "" : " hidden") +
+    ">" +
+    remTimeInputs("reminderEditTimeList", e.times) +
+    "</div>"
+  );
+}
+function reminderEditReadExtra(e) {
+  const out = {};
+  if (Array.isArray(e.checklist)) {
+    const items = (document.getElementById("reminderEditItems")?.value || "")
+      .split(/\r?\n/)
+      .map((x) => x.trim().slice(0, 100))
+      .filter(Boolean)
+      .slice(0, 25);
+    if (!items.length) {
+      alert("A checklist needs at least one item.");
+      return null;
+    }
+    const was = new Map(e.checklist.map((x) => [x.t, x.done]));
+    out.checklist = items.map((t) => ({ t, done: !!was.get(t) }));
+  }
+  if (document.getElementById("reminderEditTimeMode")?.value === "times") {
+    const times = reminderReadTimes("reminderEditTimeList");
+    if (!times.length) {
+      alert("Add at least one time, or choose the daily summary.");
+      return null;
+    }
+    out.times = times;
+  } else out.times = undefined;
+  return out;
+}
+function uvbLastChangeText(a) {
+  const last = entries
+    .filter((e) => e.animal === a && e.section === "UVB & Lighting" && e.detail === "UVB bulb change")
+    .sort((x, y) => y.date.localeCompare(x.date))[0];
+  if (!last) return "No UVB bulb change recorded yet for " + a + ".";
+  const days = Math.max(0, Math.round((new Date(today() + "T12:00") - new Date(last.date + "T12:00")) / 864e5));
+  return (
+    "Last UVB bulb change for " +
+    a +
+    ": " +
+    niceDate(last.date) +
+    " (" +
+    days +
+    " day" +
+    (days === 1 ? "" : "s") +
+    " ago)" +
+    (last.bulb ? " · " + last.bulb : "") +
+    "."
+  );
+}
+
 function repeatText(e) {
-  return Number(e.repeatDays) > 0 ? " · Repeats every " + Number(e.repeatDays) + " days" : "";
+  const m = Number(e.repeatMonths) || 0,
+    d = Number(e.repeatDays) || 0;
+  if (m) return m === 1 ? " · Repeats monthly" : " · Repeats every " + m + " months";
+  if (d === 1) return " · Repeats daily";
+  if (d === 7) return " · Repeats weekly";
+  if (d === 14) return " · Repeats every 2 weeks";
+  return d > 0 ? " · Repeats every " + d + " days" : "";
 }
 function escapeAttribute(v) {
   return esc(v);
@@ -1967,6 +2358,10 @@ function recordMeta(e) {
     e.preyType,
     e.preyWeight ? e.preyWeight + " g prey" : "",
     e.response,
+    e.supplement ? "Supplement " + e.supplement : "",
+    e.bulb ? "Bulb " + e.bulb : "",
+    e.product,
+    e.method,
     e.warmTemp !== undefined && e.warmTemp !== "" ? "Warm " + e.warmTemp + " °F" : "",
     e.coolTemp !== undefined && e.coolTemp !== "" ? "Cool " + e.coolTemp + " °F" : "",
     e.humidity !== undefined && e.humidity !== "" ? "Humidity " + e.humidity + "%" : "",
@@ -2034,7 +2429,9 @@ function careEditMarkup() {
     return '<p>This record is no longer available.</p><button class="action" onclick="openPanel(&quot;Care Logs&quot;)">Back to history</button>';
   let weight = e.section === "Weight Tracker",
     feed = e.section === "Feeding Tracker",
-    habitat = e.section === "Enclosure Care";
+    habitat = e.section === "Enclosure Care",
+    uvb = e.section === "UVB & Lighting",
+    supp = e.section === "Supplements";
   return (
     '<p class="muted">Edit one saved record for <strong>' +
     esc(e.animal) +
@@ -2058,6 +2455,18 @@ function careEditMarkup() {
         esc(e.preyWeight || "") +
         '"></label><label>Feeding response<input id="careEditResponse" maxlength="80" value="' +
         esc(e.response || "") +
+        '"></label><label>Supplement used<input id="careEditSupplement" maxlength="40" value="' +
+        esc(e.supplement || "") +
+        '"></label>'
+      : "") +
+    (uvb
+      ? '<label>Bulb (brand / type)<input id="careEditBulb" maxlength="80" value="' + esc(e.bulb || "") + '"></label>'
+      : "") +
+    (supp
+      ? '<label>Product<input id="careEditProduct" maxlength="60" value="' +
+        esc(e.product || "") +
+        '"></label><label>How it was given<input id="careEditMethod" maxlength="40" value="' +
+        esc(e.method || "") +
         '"></label>'
       : "") +
     (habitat
@@ -2139,6 +2548,12 @@ function saveCareEdit() {
     next.preyType = document.getElementById("careEditPrey").value.trim().slice(0, 60);
     next.preyWeight = w;
     next.response = document.getElementById("careEditResponse").value.trim().slice(0, 80);
+    next.supplement = (document.getElementById("careEditSupplement")?.value || "").trim().slice(0, 40);
+  }
+  if (e.section === "UVB & Lighting") next.bulb = (document.getElementById("careEditBulb")?.value || "").trim().slice(0, 80);
+  if (e.section === "Supplements") {
+    next.product = (document.getElementById("careEditProduct")?.value || "").trim().slice(0, 60);
+    next.method = (document.getElementById("careEditMethod")?.value || "").trim().slice(0, 40);
   }
   if (e.section === "Enclosure Care") {
     for (let [key, max] of [
@@ -2797,7 +3212,7 @@ function deviceDirectory() {
   );
 }
 
-const SCALE_LC_VERSION = "3.21.4";
+const SCALE_LC_VERSION = "3.22";
 const SCALE_SUPPORT_EMAIL = "scaleandtellsupport@gmail.com";
 const SCALE_LC_ICON = "icon-180.png";
 /* Android/desktop Chrome can install with one tap; iPhone only allows Share → Add to Home Screen. */
@@ -2864,7 +3279,7 @@ function installGuideMarkup() {
   let intro = isiOS
     ? "<p><b>On iPhone:</b> open Scale & Tell in Safari, tap Share (the square with an arrow), then choose <b>Add to Home Screen</b> and tap Add.</p>"
     : android
-      ? "<p><b>On Android:</b> open Scale & Tell in Chrome, tap the browser menu (⋮), then choose <b>Add to Home screen</b> or <b>Install app</b>, if offered.</p>"
+      ? "<p><b>On Android:</b> in Chrome, tap the menu (⋮), then <b>Install app</b> or <b>Add to Home screen</b>. In Samsung Internet, tap <b>☰</b> → <b>Add page to</b> → <b>Home screen</b>. In Firefox, tap <b>⋮</b> → <b>Add app to Home screen</b>.</p>"
       : "<p>On iPhone, use Safari → Share → Add to Home Screen. On Android, use Chrome → menu (⋮) → Add to Home screen, if offered.</p>";
   return (
     '<p class="lcLead">Keep your reptile journal one tap away. <a href="https://rebeccacreates.github.io/Scaleandtellpreview/" target="_blank" rel="noopener noreferrer"><b>Open Scale &amp; Tell ↗</b></a></p><div class="lcPanel"><div class="lcIconPreview"><img src="' +
@@ -2956,6 +3371,7 @@ function render() {
   }
   if (current === "Founding Keeper Studio") {
     el.innerHTML = founderStudioMarkup();
+    setTimeout(founderMountPayPal, 0);
     return;
   }
   if (current === "Cloud Account") {
@@ -2988,6 +3404,8 @@ function render() {
       "Enclosure Care",
       "Shed History",
       "Observations",
+      "UVB & Lighting",
+      "Supplements",
       "Calendar",
       "Weight Tracker",
       "Health & Vet",
@@ -3175,7 +3593,11 @@ function render() {
       '<details class="compactDisclosure"><summary>Archived animals and devices</summary><button class="action secondary" onclick="openPanel(&quot;Archived Reptiles&quot;)">Archived animals</button><button class="action secondary" onclick="openPanel(&quot;Devices&quot;)">Manage devices</button></details>';
     return;
   }
-  if (["Feeding Tracker", "Enclosure Care", "Shed History", "Observations", "Calendar"].includes(current)) {
+  if (
+    ["Feeding Tracker", "Enclosure Care", "Shed History", "Observations", "UVB & Lighting", "Supplements", "Calendar"].includes(
+      current,
+    )
+  ) {
     let options = careOptions(current, selectedAnimal);
     el.innerHTML =
       (current === "Calendar"
@@ -3184,7 +3606,7 @@ function render() {
           '</div><button class="action" id="addReminderButton" onclick="toggleReminderForm()">+ Add Reminder</button><div id="reminderForm" hidden>'
         : "") +
       (current === "Calendar"
-        ? '<p class="helperLine">Set a care date below. Repeat reminders schedule their next occurrence when the current one is marked Done.</p>'
+        ? '<p class="helperLine">Set a care date below. Repeat reminders schedule their next occurrence when the current one is marked Done.</p><label>Reminder type<select id="remKind" onchange="reminderKindChanged()"><option value="care">Care log reminder</option><option value="checklist">Checklist</option></select></label>'
         : "") +
       '<label>Reptile<select id="animal" onchange="refreshCareOptions()">' +
       animalOptions() +
@@ -3192,7 +3614,8 @@ function render() {
       options.map((x) => "<option>" + x + "</option>").join("") +
       "</select></label>" +
       (current === "Calendar"
-        ? '<label>Repeat reminder<select id="repeatDays"><option value="0">One time only</option><option value="5">Every 5 days</option><option value="7">Every 7 days</option><option value="10">Every 10 days</option><option value="14">Every 14 days</option><option value="30">Every 30 days</option><option value="custom">Custom interval</option></select></label><label id="repeatCustomLabel" hidden>Custom interval (days)<input type="number" id="repeatCustom" min="1" max="365" step="1" placeholder="e.g. 8"></label><p class="helperLine">Repeating tasks schedule the next occurrence only when you mark the current one Done. No automatic feeding assumptions.</p>'
+        ? reminderExtraFields() +
+          '' + repeatSelectMarkup("repeatDays", "repeatCustom", "repeatCustomLabel") + '<p class="helperLine">Repeating tasks schedule the next occurrence only when you mark the current one Done. No automatic feeding assumptions.</p>'
         : "") +
       (current === "Feeding Tracker"
         ? '<label id="foodTypeLabel">' +
@@ -3201,7 +3624,17 @@ function render() {
           esc(careFormHint(selectedAnimal)) +
           '</p><label>Food / prey weight (grams, optional)<input id="preyWeight" type="number" min="0" max="10000" step="0.1" placeholder="e.g. 16"></label><label>Feeding response<select id="feedingResponse"><option value="">Select response (optional)</option><option>Immediate strike</option><option>Delayed strike</option><option>Tong-fed</option><option>Left overnight</option><option>Refused</option><option>Other</option></select></label>'
         : "") +
-      "" +
+      (current === "Feeding Tracker"
+        ? '<label>Supplement used (optional)<select id="feedSupplement"><option value="">None</option><option>Calcium</option><option>Calcium + D3</option><option>Multivitamin</option><option>Other</option></select></label>'
+        : "") +
+      (current === "UVB & Lighting"
+        ? '<p class="helperLine" id="uvbLast">' +
+          esc(uvbLastChangeText(selectedAnimal)) +
+          '</p><label>Bulb (brand / type, optional)<input id="bulbInfo" maxlength="80" placeholder="e.g. T5 HO 10.0, 22 in"></label>'
+        : "") +
+      (current === "Supplements"
+        ? '<label>Product (optional)<input id="suppProduct" maxlength="60" placeholder="e.g. brand name"></label><label>How it was given (optional)<select id="suppMethod"><option value="">Select</option><option>Dusted on feeders</option><option>Mixed into food</option><option>In water</option><option>Given directly</option></select></label>'
+        : "") +
       (current === "Enclosure Care"
         ? '<label>Warm-side reading (°F, optional)<input id="warmTemp" type="number" min="0" max="130" step="0.1"></label><label>Cool-side reading (°F, optional)<input id="coolTemp" type="number" min="0" max="130" step="0.1"></label><label>Humidity (%, optional)<input id="humidity" type="number" min="0" max="100" step="0.1"></label>'
         : "") +
@@ -3210,6 +3643,11 @@ function render() {
         ? "</div>"
         : "<h3>Saved preview entries</h3>" + logList(entries.filter((e) => e.section === current)));
     document.getElementById("date").value = today();
+    if (pendingLogDetail) {
+      const sel = document.getElementById("detail");
+      if (sel && [...sel.options].some((o) => o.value === pendingLogDetail)) sel.value = pendingLogDetail;
+    }
+    pendingLogDetail = "";
     if (current === "Calendar") {
       document.getElementById("repeatDays").addEventListener("change", toggleRepeatCustom);
     }
@@ -3232,7 +3670,7 @@ function render() {
       '><summary>Filter by animal, activity or date</summary><div class="filters"><label>Reptile<select id="logAnimal" onchange="filterLogs()"><option value="">All reptiles</option>' +
       names.map((a) => '<option value="' + esc(a) + '">' + esc(a) + "</option>").join("") +
       '</select></label><label>Activity<select id="logType" onchange="filterLogs()"><option value="">All care</option>' +
-      ["Feeding Tracker", "Enclosure Care", "Shed History", "Weight Tracker", "Observations", "Health & Vet"]
+      ["Feeding Tracker", "Enclosure Care", "UVB & Lighting", "Supplements", "Shed History", "Weight Tracker", "Observations", "Health & Vet"]
         .map((x) => "<option>" + x + "</option>")
         .join("") +
       '</select></label><label>From date<input type="date" id="logFrom" onchange="filterLogs()"></label><label>To date<input type="date" id="logTo" onchange="filterLogs()"></label></div><button class="action secondary" onclick="resetLogFilters()">Clear filters</button></details><p class="countLine" id="logCount" aria-live="polite"></p><div id="filteredLogs"></div>';
@@ -3343,6 +3781,8 @@ let importDraft = [],
   importStatus = "";
 const importSections = [
   "Feeding Tracker",
+  "UVB & Lighting",
+  "Supplements",
   "Shed History",
   "Weight Tracker",
   "Enclosure Care",
@@ -3686,6 +4126,8 @@ function importFindDate(line) {
 function importGuessSection(t) {
   const s = t.toLowerCase();
   if (/remind|calendar|schedule|due\b/.test(s)) return "Calendar";
+  if (/uvb|bulb/.test(s)) return "UVB & Lighting";
+  if (/supplement|calcium|\bd3\b|multivit|vitamin/.test(s)) return "Supplements";
   if (/weigh|\bweight\b|\b\d+(?:\.\d+)?\s*(?:g|gr|grams?|kg|lbs?|oz)\b/.test(s)) return "Weight Tracker";
   if (/feed|\bfed\b|\bate\b|\beat\b|refus|skip|prey|meal|rat|mouse|mice|pinky|pinkie|fuzzy|hopper|crick|dubia|roach|worm|chick|f\/t|\bft\b/.test(s))
     return "Feeding Tracker";
@@ -3721,6 +4163,18 @@ function importParseLog(text, defaultAnimal) {
         ? /refus|skip|didn'?t eat|did not eat|no eat|not eat/i.test(rest)
           ? "Refused"
           : "Ate"
+        : section === "UVB & Lighting"
+          ? /bask|heat/i.test(rest)
+            ? "Basking / heat bulb change"
+            : "UVB bulb change"
+          : section === "Supplements"
+            ? /d3/i.test(rest)
+              ? "Calcium + D3"
+              : /calcium/i.test(rest)
+                ? "Calcium"
+                : /multi|vitamin/i.test(rest)
+                  ? "Multivitamin"
+                  : "Other supplement"
         : section === "Shed History"
           ? /blue|opaque/i.test(rest)
             ? "In blue"
@@ -3978,7 +4432,10 @@ function taskMarkup(tasks) {
             niceDate(e.date) +
             (e.notes ? " · " + esc(e.notes) : "") +
             esc(repeatText(e)) +
-            '</small><button onclick="openTaskAnimal(' +
+            esc(reminderTimesText(e)) +
+            "</small>" +
+            checklistMarkup(e, i) +
+            '<button onclick="openTaskAnimal(' +
             i +
             ')">View profile</button>' +
             (e.done
@@ -4021,9 +4478,10 @@ function reminderEditMarkup() {
     esc(e.date) +
     '"></label><label>Reminder type<input id="reminderEditDetail" maxlength="80" value="' +
     esc(e.detail) +
-    '"></label><label>Repeat every N days (0 = one time)<input type="number" id="reminderEditRepeat" min="0" max="365" step="1" value="' +
-    esc(e.repeatDays || 0) +
-    '"></label><label>Notes<textarea id="reminderEditNotes" maxlength="300">' +
+    '"></label>' +
+    reminderEditExtraFields(e) +
+    repeatSelectMarkup("reminderEditRepeat", "reminderEditRepeatCustom", "reminderEditRepeatLabel", e) +
+    '<label>Notes<textarea id="reminderEditNotes" maxlength="300">' +
     esc(e.notes || "") +
     '</textarea></label><div class="inlineActions"><button class="action" onclick="saveReminderEdit()">Save changes</button><button class="action secondary" onclick="returnFromReminderEdit()">Cancel</button></div>'
   );
@@ -4039,7 +4497,9 @@ function saveReminderEdit() {
   let d = document.getElementById("reminderEditDate")?.value,
     type = document.getElementById("reminderEditDetail")?.value.trim() || "",
     a = document.getElementById("reminderEditAnimal")?.value,
-    n = Number(document.getElementById("reminderEditRepeat")?.value);
+    repeat = readRepeat("reminderEditRepeat", "reminderEditRepeatCustom"),
+    n = repeat ? repeat.repeatDays : -1;
+  if (!repeat) return;
   if (!validDate(d)) {
     alert("Choose a valid date.");
     return;
@@ -4066,15 +4526,24 @@ function saveReminderEdit() {
     alert("An identical unfinished reminder already exists.");
     return;
   }
+  let extra = reminderEditReadExtra(e);
+  if (!extra) return;
   let old = e;
   entries[reminderEditIndex] = {
     ...e,
+    ...extra,
     animal: a,
     date: d,
     detail: type.slice(0, 80),
     repeatDays: n,
+    repeatMonths: repeat.repeatMonths || undefined,
+    repeatAnchor: repeat.repeatMonths ? Number(d.slice(8, 10)) : undefined,
     notes: document.getElementById("reminderEditNotes").value.trim().slice(0, 300),
   };
+  for (const k of ["times", "repeatMonths", "repeatAnchor"])
+    if (entries[reminderEditIndex][k] === undefined) delete entries[reminderEditIndex][k];
+  if (REMINDER_LOG[entries[reminderEditIndex].detail] && entries[reminderEditIndex].kind !== "checklist")
+    entries[reminderEditIndex].logSection = REMINDER_LOG[entries[reminderEditIndex].detail][0];
   try {
     save();
   } catch (err) {
@@ -4214,6 +4683,8 @@ function logCareChooser() {
       ["Weight Tracker", "Weight", "scale"],
       ["Shed History", animalCareType(selectedAnimal) === "invertebrate" ? "Molt" : "Shed", "sparkles"],
       ["Enclosure Care", "Habitat check", "thermometer"],
+      ["UVB & Lighting", "UVB / lighting", "sun"],
+      ["Supplements", "Supplements", "pill"],
       ["Observations", "Observation", "eye"],
       ["Health & Vet", "Health / Vet", "heart"],
     ]
@@ -4292,6 +4763,8 @@ const PROFILE_TYPES = {
   "Shed History": "Shed History",
   "Enclosure Care": "Enclosure Care",
   Observations: "Observations",
+  "UVB & Lighting": "UVB & Lighting",
+  Supplements: "Supplements",
   "Health & Vet": "Health & Vet",
 };
 function profileHistoryMarkup(a) {
@@ -4692,10 +5165,12 @@ function completeReminder(i) {
   if (!e || e.section !== "Calendar" || e.done) return;
   e.done = true;
   e.completedAt = new Date().toISOString();
-  let n = Number(e.repeatDays) || 0;
-  if (n > 0 && Number.isInteger(n) && n <= 365) {
+  let n = Number(e.repeatDays) || 0,
+    months = Number(e.repeatMonths) || 0;
+  if ((n > 0 && Number.isInteger(n) && n <= 365) || (months > 0 && months <= 12)) {
     let base = e.date > today() ? e.date : today(),
-      next = advanceDate(base, n);
+      next = n > 0 ? advanceDate(base, n) : advanceMonths(e.date, months, e.repeatAnchor);
+    if (months) while (next <= today()) next = advanceMonths(next, months, e.repeatAnchor);
     if (
       !entries.some(
         (x) => x.section === "Calendar" && !x.done && x.animal === e.animal && x.detail === e.detail && x.date === next,
@@ -4708,12 +5183,15 @@ function completeReminder(i) {
         date: next,
         notes: e.notes || "",
         repeatDays: n,
+        ...(months ? { repeatMonths: months, repeatAnchor: e.repeatAnchor || Number(e.date.slice(8, 10)) } : {}),
         done: false,
+        ...reminderCarryOver(e),
       });
     }
   }
   save();
   render();
+  reminderOfferLog(e);
 }
 function editProfile(a) {
   let i = animals.indexOf(a);
@@ -4737,6 +5215,11 @@ function saveEntry() {
   selectedAnimal = document.getElementById("animal").value;
   let detail = document.getElementById("detail").value,
     notes = document.getElementById("entryNotes").value.trim();
+  let rem = current === "Calendar" ? reminderFormValues(detail) : null;
+  if (current === "Calendar") {
+    if (!rem) return;
+    detail = rem.detail;
+  }
   if (
     current === "Calendar" &&
     entries.some(
@@ -4768,19 +5251,8 @@ function saveEntry() {
     alert("Check the temperature and humidity readings.");
     return;
   }
-  let repeatValue = document.getElementById("repeatDays")?.value || "0",
-    repeatDays =
-      repeatValue === "custom" ? Number(document.getElementById("repeatCustom")?.value) : Number(repeatValue);
-  if (
-    current === "Calendar" &&
-    (!Number.isInteger(repeatDays) ||
-      repeatDays < 0 ||
-      repeatDays > 365 ||
-      (repeatValue === "custom" && repeatDays < 1))
-  ) {
-    alert("Enter a repeat interval between 1 and 365 days, or choose One time only.");
-    return;
-  }
+  let repeat = current === "Calendar" ? readRepeat("repeatDays", "repeatCustom") : null;
+  if (current === "Calendar" && !repeat) return;
   entries.push({
     section: current,
     animal: selectedAnimal,
@@ -4789,7 +5261,25 @@ function saveEntry() {
     notes,
     ...(current === "Feeding Tracker" ? { preyType, preyWeight, response } : {}),
     ...(current === "Enclosure Care" ? { warmTemp, coolTemp, humidity } : {}),
-    ...(current === "Calendar" ? { repeatDays } : {}),
+    ...(current === "Calendar"
+      ? {
+          repeatDays: repeat.repeatDays,
+          ...(repeat.repeatMonths ? { repeatMonths: repeat.repeatMonths, repeatAnchor: Number(date.slice(8, 10)) } : {}),
+          ...rem.extra,
+        }
+      : {}),
+    ...(current === "Feeding Tracker" && document.getElementById("feedSupplement")?.value
+      ? { supplement: document.getElementById("feedSupplement").value }
+      : {}),
+    ...(current === "UVB & Lighting"
+      ? { bulb: (document.getElementById("bulbInfo")?.value || "").trim().slice(0, 80) }
+      : {}),
+    ...(current === "Supplements"
+      ? {
+          product: (document.getElementById("suppProduct")?.value || "").trim().slice(0, 60),
+          method: document.getElementById("suppMethod")?.value || "",
+        }
+      : {}),
   });
   save();
   render();
@@ -5310,8 +5800,13 @@ function careOptions(section, a) {
       "Weight check",
       "Shed / molt check",
       "Medication / veterinary follow-up",
+      "UVB bulb change",
+      "Supplement",
       "Other care",
     ];
+  if (section === "UVB & Lighting")
+    return ["UVB bulb change", "Basking / heat bulb change", "UVB output check", "Lighting schedule change"];
+  if (section === "Supplements") return ["Calcium", "Calcium + D3", "Multivitamin", "Other supplement"];
   if (section === "Feeding Tracker") return ["Ate", "Refused", "Offered"];
   if (section === "Shed History")
     return type === "invertebrate"
@@ -5352,6 +5847,8 @@ function refreshCareOptions() {
   if (label) label.firstChild.textContent = foodTypeLabel(a);
   let hint = document.getElementById("speciesCareHint");
   if (hint) hint.textContent = careFormHint(a);
+  let uvb = document.getElementById("uvbLast");
+  if (uvb && a) uvb.textContent = uvbLastChangeText(a);
 }
 // A health entry is a regular care record. Optional photo attachments are compressed before saving.
 let healthEditing = -1;
@@ -7323,7 +7820,7 @@ function pushSettingsMarkup() {
     (pushInstalledIOS()
       ? '</p><p><b>iPhone only allows reminders from the Home Screen app.</b></p><ol class="lcSteps"><li>Tap <b>Add to Home Screen</b> below. Your phone&#39;s share menu opens.</li><li>Scroll down the menu and tap <b>Add to Home Screen</b>, then <b>Add</b>.</li><li>Open Scale &amp; Tell from the new icon on your Home Screen.</li></ol><button class="action" type="button" onclick="installShare()">Add to Home Screen</button><p class="lcSmall">Not in the menu? Tap <b>Copy app link</b>, open <b>Safari</b>, paste the link, then tap Share → Add to Home Screen.</p><button class="action secondary" type="button" onclick="installCopyLink()">Copy app link</button><p class="lcSmall" id="installCopyNote">'
       : "") +
-    '</p><label>Daily reminder time<select id="pushHourChoice" onchange="pushSetHour(this.value)">' +
+    '</p><label>Daily summary time<select id="pushHourChoice" onchange="pushSetHour(this.value)">' +
     Array.from(
       { length: 24 },
       (_, h) =>
@@ -7335,7 +7832,7 @@ function pushSettingsMarkup() {
         new Date(2026, 0, 1, h).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }) +
         "</option>",
     ).join("") +
-    '</select></label><p class="helperLine">This time applies to all your signed-in devices.</p>' +
+    '</select></label><p class="helperLine">Reminders without their own time arrive together at this time. Reminders with set times arrive at those times. Applies to all your signed-in devices.</p>' +
     control +
     '<p id="pushMessage" class="helperLine" role="status" aria-live="polite"></p><small>Optional · No alerts for completed tasks · Manage or turn off here anytime. Requires an internet connection and notification permission.</small></div>'
   );
@@ -7892,4 +8389,6 @@ function accountPrefsSet(key, value) {
   if (Number.isInteger(h) && h >= 0 && h <= 23) pushHour = h;
 })();
 
+if ("serviceWorker" in navigator && isSecureContext)
+  navigator.serviceWorker.register("./sw.js", { scope: "./", updateViaCache: "none" }).catch(() => {});
 cloudInitialize();
